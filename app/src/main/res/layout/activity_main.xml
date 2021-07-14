@@ -58,60 +58,60 @@
             >
 
        <!--sensor table-->
-    <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/clickConsSensorTable"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:background="@drawable/selector_main_menu"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintVertical_bias="0.092"
-                app:layout_constraintHeight_default="percent"
-                app:layout_constraintHeight_percent="0.203"
-                android:clickable="true"
-                android:focusable="true"
-                android:layoutDirection="ltr">
+<!--    <androidx.constraintlayout.widget.ConstraintLayout-->
+<!--                android:id="@+id/clickConsSensorTable"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="0dp"-->
+<!--                android:background="@drawable/selector_main_menu"-->
+<!--                app:layout_constraintStart_toStartOf="parent"-->
+<!--                app:layout_constraintEnd_toEndOf="parent"-->
+<!--                app:layout_constraintTop_toTopOf="parent"-->
+<!--                app:layout_constraintBottom_toBottomOf="parent"-->
+<!--                app:layout_constraintVertical_bias="0.092"-->
+<!--                app:layout_constraintHeight_default="percent"-->
+<!--                app:layout_constraintHeight_percent="0.203"-->
+<!--                android:clickable="true"-->
+<!--                android:focusable="true"-->
+<!--                android:layoutDirection="ltr">-->
 
-            <androidx.appcompat.widget.AppCompatImageView
-                    android:id="@+id/ivSensorTable"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/ic_sensors_small_white"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintVertical_bias="0.187"
-            />
+<!--            <androidx.appcompat.widget.AppCompatImageView-->
+<!--                    android:id="@+id/ivSensorTable"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    app:srcCompat="@drawable/ic_sensors_small_white"-->
+<!--                    app:layout_constraintStart_toStartOf="parent"-->
+<!--                    app:layout_constraintEnd_toEndOf="parent"-->
+<!--                    app:layout_constraintTop_toTopOf="parent"-->
+<!--                    app:layout_constraintBottom_toBottomOf="parent"-->
+<!--                    app:layout_constraintVertical_bias="0.187"-->
+<!--            />-->
 
-            <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/sensor_table_title"
-                    android:textColor="@color/gray2"
-                    android:textSize="20sp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/ivSensorTable"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintVertical_bias="0.239"
-            />
+<!--            <TextView-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="@string/sensor_table_title"-->
+<!--                    android:textColor="@color/gray2"-->
+<!--                    android:textSize="20sp"-->
+<!--                    app:layout_constraintStart_toStartOf="parent"-->
+<!--                    app:layout_constraintEnd_toEndOf="parent"-->
+<!--                    app:layout_constraintTop_toBottomOf="@+id/ivSensorTable"-->
+<!--                    app:layout_constraintBottom_toBottomOf="parent"-->
+<!--                    app:layout_constraintVertical_bias="0.239"-->
+<!--            />-->
 
-            <androidx.appcompat.widget.AppCompatImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/arrow"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintHorizontal_bias="0.935"
-            />
+<!--            <androidx.appcompat.widget.AppCompatImageView-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    app:srcCompat="@drawable/arrow"-->
+<!--                    app:layout_constraintStart_toStartOf="parent"-->
+<!--                    app:layout_constraintEnd_toEndOf="parent"-->
+<!--                    app:layout_constraintTop_toTopOf="parent"-->
+<!--                    app:layout_constraintBottom_toBottomOf="parent"-->
+<!--                    app:layout_constraintHorizontal_bias="0.935"-->
+<!--            />-->
 
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+<!--    </androidx.constraintlayout.widget.ConstraintLayout>-->
 
     <!--map-->
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -121,9 +121,9 @@
             android:background="@drawable/selector_main_menu"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/clickConsSensorTable"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintHeight_default="percent"
-            app:layout_constraintHeight_percent="0.203"
+            app:layout_constraintHeight_percent="0.270"
             android:layout_marginTop="2.7dp"
             android:layoutDirection="ltr"
     >
@@ -178,7 +178,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/clickAlarmLog"
             app:layout_constraintHeight_default="percent"
-            app:layout_constraintHeight_percent="0.203"
+            app:layout_constraintHeight_percent="0.270"
             android:layout_marginTop="2.7dp"
 
             android:layoutDirection="ltr"
@@ -230,7 +230,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/clickConsMap"
             app:layout_constraintHeight_default="percent"
-            app:layout_constraintHeight_percent="0.203"
+            app:layout_constraintHeight_percent="0.270"
             android:layout_marginTop="2.7dp"
             android:layoutDirection="ltr"
     >

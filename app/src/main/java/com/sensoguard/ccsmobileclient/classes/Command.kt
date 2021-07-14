@@ -1,0 +1,14 @@
+package com.sensoguard.ccsmobileclient.classes
+
+import com.sensoguard.ccsmobileclient.global.NORMAL_STATE
+
+class Command(val commandName: String, val commandContent: IntArray?, val icId: Int) {
+    var selectionsTitles = ArrayList<String>()
+    var selectionsCommands = ArrayList<String>()
+    var defaultSelected: Int = 1
+    var state: Int = NORMAL_STATE
+    var isExpand = false
+    var maxTimeout = 60
+    var sensCar = 0
+    var sensIntruder = 0
+}

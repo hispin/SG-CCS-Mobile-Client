@@ -13,11 +13,11 @@ repositories {
 android {
     compileSdkVersion 29
     defaultConfig {
-        applicationId "com.sensoguard.detectsensor"
+        applicationId "com.sensoguard.ccsmobileclient"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 101
-        versionName "1.101"
+        versionCode 102
+        versionName "1.102"
         vectorDrawables.useSupportLibrary = true
         //testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }

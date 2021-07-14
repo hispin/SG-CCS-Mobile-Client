@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">SG-Patrol</string>
+    <string name="app_name" translatable="false">SG-CCS Mobile Client</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="empty_field_error">This field cannot be blank</string>
@@ -141,6 +141,7 @@
     <string name="radar">Radar</string>
     <string name="vibration">Vibration</string>
     <string name="connected">connected</string>
+    <string name="share_token">share token</string>
 
     <string-array name="car_ids">
         <item>0</item>
