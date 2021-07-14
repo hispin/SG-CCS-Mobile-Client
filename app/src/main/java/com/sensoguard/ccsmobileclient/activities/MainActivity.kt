@@ -107,10 +107,10 @@ class MainActivity : ParentActivity() {
 
     }
 
-    override fun onBackPressed() {
-
-        //showConformDialog()
-    }
+//    override fun onBackPressed() {
+//
+//        //showConformDialog()
+//    }
 
     //show confirm dialog before stop usb process
     private fun showConformDialog() {
