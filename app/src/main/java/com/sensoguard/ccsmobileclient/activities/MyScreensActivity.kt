@@ -350,16 +350,16 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, java.util.Observ
 
         //Toast.makeText(this,"isConnected1="+isConnected, Toast.LENGTH_SHORT).show()
 
-        togChangeStatus?.setOnCheckedChangeListener { buttonView, isChecked ->
-            if (isChecked) {
-                startConnectionService()
-            } else {
-                setBooleanInPreference(this, USB_DEVICE_CONNECT_STATUS, false)
-                sendBroadcast(Intent(STOP_READ_DATA_KEY))
-                //sendBroadcast(Intent(DISCONNECT_USB_PROCESS_KEY))
-                sendBroadcast(Intent(STOP_ALARM_SOUND))
-            }
-        }
+//        togChangeStatus?.setOnCheckedChangeListener { buttonView, isChecked ->
+//            if (isChecked) {
+//                startConnectionService()
+//            } else {
+//                setBooleanInPreference(this, USB_DEVICE_CONNECT_STATUS, false)
+//                sendBroadcast(Intent(STOP_READ_DATA_KEY))
+//                //sendBroadcast(Intent(DISCONNECT_USB_PROCESS_KEY))
+//                sendBroadcast(Intent(STOP_ALARM_SOUND))
+//            }
+//        }
     }
 
     //start connection service
