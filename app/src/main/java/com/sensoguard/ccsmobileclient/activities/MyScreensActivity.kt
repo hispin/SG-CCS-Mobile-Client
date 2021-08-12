@@ -33,7 +33,6 @@ import com.sensoguard.ccsmobileclient.fragments.*
 import com.sensoguard.ccsmobileclient.global.*
 import com.sensoguard.ccsmobileclient.interfaces.OnFragmentListener
 import com.sensoguard.ccsmobileclient.services.ServiceConnectSensor
-import com.sensoguard.ccsmobileclient.services.ServiceHandleAlarms
 import kotlinx.android.synthetic.main.activity_my_screens.*
 import java.util.*
 
@@ -41,7 +40,7 @@ import java.util.*
 class MyScreensActivity : ParentActivity(), OnFragmentListener, java.util.Observer {
 
 
-    private var clickHundler: ClickHandler? = null
+    //private var clickHundler: ClickHandler? = null
 
     // When requested, this adapter returns a DemoObjectFragment,
     // representing an object in the collection.
@@ -235,6 +234,11 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, java.util.Observ
                 arg1.action == "yes_connection" -> {
                     //showToast(this@MyScreensActivity,"yes_connection")
                 }
+                arg1.action == TOKEN_REGISTRATION_STATUS_KEY -> {
+                    //if the token registration status
+                    val isConnected = getBooleanInPreference(context, REGISTER_TOKEN_STATUS, false)
+                    togChangeStatus?.isChecked = isConnected
+                }
 
 
             }
@@ -301,6 +305,7 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, java.util.Observ
         filter.addAction(STOP_ALARM_SOUND)
         filter.addAction("not_connection")
         filter.addAction("yes_connection")
+        filter.addAction(TOKEN_REGISTRATION_STATUS_KEY)
         registerReceiver(usbReceiver, filter)
     }
 
@@ -309,12 +314,12 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, java.util.Observ
 
         configureActionBar()
 
-        //start listener to alarm
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(Intent(this, ServiceHandleAlarms::class.java))
-        } else {
-            startService(Intent(this, ServiceHandleAlarms::class.java))
-        }
+//        //start listener to alarm
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            startForegroundService(Intent(this, ServiceHandleAlarms::class.java))
+//        } else {
+//            startService(Intent(this, ServiceHandleAlarms::class.java))
+//        }
         configTabs()
 
     }
@@ -326,7 +331,8 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, java.util.Observ
     //TODO : the toggle will updated by the status changing
     private fun configureActionBar() {
 
-        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)//supportActionBar
+        val toolbar =
+            findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)//supportActionBar
         setSupportActionBar(toolbar)
 
         togChangeStatus = findViewById(
@@ -336,16 +342,18 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, java.util.Observ
         consMyActionBar = findViewById(
             R.id.consMyActionBar
         )
-        consMyActionBar?.setOnClickListener {
-            if (clickHundler == null) {
-                clickHundler = ClickHandler()
-                Thread(clickHundler).start()
-            } else {
-                clickHundler?.recordNewClick()
-            }
-        }
+        //Bugs fixed: disable alarm test
+//        consMyActionBar?.setOnClickListener {
+//            if (clickHundler == null) {
+//                clickHundler = ClickHandler()
+//                Thread(clickHundler).start()
+//            } else {
+//                clickHundler?.recordNewClick()
+//            }
+//        }
 
-        val isConnected = getBooleanInPreference(this, USB_DEVICE_CONNECT_STATUS, false)
+        //if the token registration status
+        val isConnected = getBooleanInPreference(this, REGISTER_TOKEN_STATUS, false)
         togChangeStatus?.isChecked = isConnected
 
         //Toast.makeText(this,"isConnected1="+isConnected, Toast.LENGTH_SHORT).show()
@@ -458,6 +466,7 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, java.util.Observ
         permissions: Array<String>,
         grantResults: IntArray
     ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION -> {
                 setExternalPermission()
@@ -586,36 +595,36 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, java.util.Observ
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    inner class ClickHandler : Runnable {
-
-        private val WAIT_DELAY = 1000
-
-        private var count = 1
-        private var lastSubmitTime = System.currentTimeMillis()
-
-        fun recordNewClick() {
-            count++
-            lastSubmitTime = System.currentTimeMillis()
-        }
-
-        override fun run() {
-            while (System.currentTimeMillis() - lastSubmitTime <= WAIT_DELAY) {
-                // idle
-                Thread.yield()
-            }
-            runOnUiThread {
-                if (count >= 2) {
-                    sendBroadcast(Intent(ACTION_TOGGLE_TEST_MODE))
-                    count = 0
-                    clickHundler = null
-                }
-                count = 0
-                clickHundler = null
-            }
-
-
-        }
-    }
+//    inner class ClickHandler : Runnable {
+//
+//        private val WAIT_DELAY = 1000
+//
+//        private var count = 1
+//        private var lastSubmitTime = System.currentTimeMillis()
+//
+//        fun recordNewClick() {
+//            count++
+//            lastSubmitTime = System.currentTimeMillis()
+//        }
+//
+//        override fun run() {
+//            while (System.currentTimeMillis() - lastSubmitTime <= WAIT_DELAY) {
+//                // idle
+//                Thread.yield()
+//            }
+//            runOnUiThread {
+//                if (count >= 2) {
+//                    sendBroadcast(Intent(ACTION_TOGGLE_TEST_MODE))
+//                    count = 0
+//                    clickHundler = null
+//                }
+//                count = 0
+//                clickHundler = null
+//            }
+//
+//
+//        }
+//    }
 
 
 //    override fun onAttachedToWindow() {

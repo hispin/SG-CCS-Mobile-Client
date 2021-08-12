@@ -7,8 +7,8 @@
     <string name="csv">csv</string>
     <string name="dialog_new_sensor_title">Configura i sensori</string>
     <string name="invalid_mum_sensors">numero di sensori non valido</string>
-    <string name="name_title">NOME</string>
-    <string name="id_title">ID</string>
+    <string name="name_title">ZONE</string>
+    <string name="id_title">HUB</string>
     <string name="map_location_title">POSTO</string>
     <string name="status_title">ATTIVO</string>
     <string name="type_title">GENERE</string>
@@ -65,7 +65,7 @@
     <string name="activate">Attivare</string>
     <string name="error">Errore</string>
     <string name="general_desc">descrizione</string>
-    <string name="email_subject">Il mio codice per l\'app SG-Patrol</string>
+    <string name="email_subject">Il mio codice per l\'app SG-CCS Mobile Client</string>
     <string name="delete_all">Cancella tutto</string>
     <string name="do_you_really_want_delete_all_alarm">DVuoi davvero cancellare tutti gli allarmi?</string>
     <string name="receiver_disconnected">Ricevitore disconnesso</string>

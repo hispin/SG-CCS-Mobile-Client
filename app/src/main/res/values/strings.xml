@@ -7,8 +7,8 @@
     <string name="csv">csv</string>
     <string name="dialog_new_sensor_title">Configure Sensors</string>
     <string name="invalid_mum_sensors">invalid number of sensors</string>
-    <string name="name_title">NAME</string>
-    <string name="id_title">ID</string>
+    <string name="name_title">ZONE</string>
+    <string name="id_title">HUB</string>
     <string name="map_location_title">PLACED</string>
     <string name="status_title">ACTIVE</string>
     <string name="type_title">TYPE</string>
@@ -67,7 +67,7 @@
     <string name="activate">Activate</string>
     <string name="error">Error</string>
     <string name="general_desc">description</string>
-    <string name="email_subject">My Code for SG-Patrol App</string>
+    <string name="email_subject">My Code for SG-CCS Mobile Client App</string>
     <string name="delete_all">Delete all</string>
     <string name="do_you_really_want_delete_all_alarm">Do you really want to delete all alarms</string>
     <string name="receiver_disconnected">Receiver Disconnected</string>
@@ -106,7 +106,7 @@
     <string name="cancel">Cancel</string>
     <string name="email_setting">Email Settings</string>
     <string name="an_alert_was_received">An alert was received</string>
-    <string name="email_content">Accept %1$s alarm from unit %2$s in %3$s</string>
+    <string name="email_content">%1$s alarm from %2$s in %3$s</string>
     <string name="outgoing_mail_server_title">Outgoing  Server</string>
     <string name="user_name">User name</string>
     <string name="outgoing_mail_port_title">Outgoing  Port</string>

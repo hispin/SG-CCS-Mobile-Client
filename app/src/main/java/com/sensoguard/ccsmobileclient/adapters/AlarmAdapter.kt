@@ -87,10 +87,16 @@ class AlarmAdapter (private var alarms: ArrayList<Alarm>, val context: Context, 
                 alarm.timeInMillis?.let { getStrDateTimeByMilliSeconds(it, "dd/MM/yy", context) }
             tvTime?.text =
                 alarm.timeInMillis?.let { getStrDateTimeByMilliSeconds(it, "kk:mm:ss", context) }
-            tvId?.text = alarm.id
+
+            var tmp = alarm.id?.split("-")
+            if (tmp != null && tmp.size > 1) {
+                tvId?.text = tmp[0]
+                tvName?.text = tmp[1]
+            }
+            //tvId?.text = alarm.id
 
             tvType?.text = alarm.type
-            tvName?.text = alarm.name
+            //tvName?.text = alarm.name
 
 
         }

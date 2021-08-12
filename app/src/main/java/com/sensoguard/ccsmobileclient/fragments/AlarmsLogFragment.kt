@@ -197,14 +197,14 @@ class AlarmsLogFragment : ParentFragment(), OnAdapterListener {
 
 
     private fun setFilter() {
-        val filter = IntentFilter(HANDLE_ALARM_KEY)
+        val filter = IntentFilter(CREATE_ALARM_KEY)
         activity?.registerReceiver(usbReceiver, filter)
     }
 
     private val usbReceiver = object : BroadcastReceiver() {
         override fun onReceive(arg0: Context, inn: Intent) {
             //accept currentAlarm
-            if (inn.action == HANDLE_ALARM_KEY) {
+            if (inn.action == CREATE_ALARM_KEY) {
                 refreshAlarmsFromPref()
             }
         }

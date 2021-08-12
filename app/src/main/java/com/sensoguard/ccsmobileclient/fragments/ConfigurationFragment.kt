@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.text.InputType
 import android.text.method.HideReturnsTransformationMethod
 import android.text.method.PasswordTransformationMethod
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,7 +20,6 @@ import androidx.appcompat.widget.AppCompatEditText
 import androidx.appcompat.widget.AppCompatImageButton
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.sensoguard.ccsmobileclient.R
-import com.sensoguard.ccsmobileclient.activities.DownloadOfflineTilesActivity
 import com.sensoguard.ccsmobileclient.adapters.GeneralItemMenuAdapter
 import com.sensoguard.ccsmobileclient.classes.*
 import com.sensoguard.ccsmobileclient.global.*
@@ -30,11 +30,10 @@ import com.sensoguard.ccsmobileclient.interfaces.OnFragmentListener
 open class ConfigurationFragment : ParentFragment(), CallToParentInterface {
 
 
+    private val SUPPORT_EMAIL: String = "Sales@sensoguard.com"
     private var isPasswordVisible: Boolean = false
     private var listPopupWindow: ListPopupWindow? = null
     private var generalItemMenuAdapter: GeneralItemMenuAdapter? = null
-    //private var etSensorValue: AppCompatEditText? = null
-    //private var btnSaveSensors: AppCompatButton? = null
     private var togChangeAlarmVibrate: ToggleButton? = null
     private var ibSatelliteMode: AppCompatButton? = null
     private var ibNormalMode: AppCompatButton? = null
@@ -44,12 +43,11 @@ open class ConfigurationFragment : ParentFragment(), CallToParentInterface {
     private var txtAlarmSoundValue: TextView? = null
     private var togChangeAlarmSound: ToggleButton? = null
     private var btnDefault: AppCompatButton? = null
+    private var btnShareToken: AppCompatButton? = null
 
-    //private var ivSelectLanguage: AppCompatImageView?=null
     private var constLangView: ConstraintLayout? = null
     private var languageValue: TextView? = null
     private var listener: OnFragmentListener? = null
-    //private var btnSaveOffline: AppCompatButton? = null
     private var togIsSensorAlwaysShow: ToggleButton? = null
     private var ibSetEmailDetails: AppCompatImageButton? = null
     private var togForwardSensorEmail: ToggleButton? = null
@@ -64,24 +62,12 @@ open class ConfigurationFragment : ParentFragment(), CallToParentInterface {
         }
     }
 
-    //(activity,ALARM_FLICKERING_DURATION_KEY,ALARM_FLICKERING_DURATION_DEFAULT_VALUE_SECONDS)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
 
         val view = inflater.inflate(R.layout.fragment_configuration, container, false)
-
-        //etSensorValue = view.findViewById(R.id.etSensorValue)
-        val currentNumSensors = getCurrentNumSensorsFromLocally()
-//        if (currentNumSensors != null) {
-//            etSensorValue?.setText(currentNumSensors.toString())
-//        }
-
-//        btnSaveSensors = view.findViewById(R.id.btnSaveSensors)
-//        btnSaveSensors?.setOnClickListener {
-//            addSensors()
-//        }
 
         togChangeAlarmVibrate = view.findViewById(R.id.togChangeAlarmVibrate)
         togChangeAlarmVibrate?.isChecked =
@@ -185,10 +171,10 @@ open class ConfigurationFragment : ParentFragment(), CallToParentInterface {
             txtAlarmSoundValue?.text = title
         }
 
-//        ivSelectLanguage=view.findViewById(R.id.ivSelectLanguage)
-//        ivSelectLanguage?.setOnClickListener{
-//            showPopupList(it)
-//        }
+        btnShareToken = view.findViewById(R.id.btnShareToken)
+        btnShareToken?.setOnClickListener {
+            shareTokenByEmail()
+        }
 
         constLangView = view.findViewById(R.id.constLangView)
         constLangView?.setOnClickListener {
@@ -197,15 +183,6 @@ open class ConfigurationFragment : ParentFragment(), CallToParentInterface {
 
         languageValue = view.findViewById(R.id.languageValue)
 
-//        btnSaveOffline = view.findViewById(R.id.btnSaveOffline)
-//        btnSaveOffline?.setOnClickListener {
-//            startActivity(
-//                Intent(
-//                    requireActivity(),
-//                    DownloadOfflineTilesActivity::class.java
-//                )
-//            )
-//        }
         ibSetEmailDetails = view.findViewById(R.id.ibSetEmailDetails)
         ibSetEmailDetails?.setOnClickListener {
             openSetEmailDetails()
@@ -213,6 +190,34 @@ open class ConfigurationFragment : ParentFragment(), CallToParentInterface {
 
 
         return view
+    }
+
+    /**
+     * share stored token via email
+     */
+    private fun shareTokenByEmail() {
+
+        val myToken = getStringInPreference(requireActivity(), FCM_TOKEN_KEY, "-1")
+
+        if (myToken.equals("-1")) {
+            ToastNotify("no token", requireActivity())
+            return
+        }
+
+        val emailIntent = Intent(Intent.ACTION_SEND)
+        emailIntent.type = "text/plain"
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf(SUPPORT_EMAIL))
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "TOKEN")
+        emailIntent.putExtra(Intent.EXTRA_TEXT, myToken)
+        val packageManager = requireActivity().packageManager
+        val activities = packageManager.queryIntentActivities(emailIntent, 0)
+        val isIntentSafe = activities.size > 0
+        if (isIntentSafe) {
+            startActivity(emailIntent)
+        } else {
+            Log.d("MainActivty", "Email App not installed")
+        }
+
     }
 
     //check if the user has been fill the email details

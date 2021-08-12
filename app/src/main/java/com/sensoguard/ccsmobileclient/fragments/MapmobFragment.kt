@@ -252,7 +252,9 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
 
     }
 
-    //show all markers
+    /**
+     * show all markers
+     */
     fun showMarkers() {
 
         //clear the markers
@@ -261,31 +263,27 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
         //show current location marker
         showCurrentLocationMarker()
 
-        //get sensors from locally
-        val sensorsArr = activity?.let { getSensorsFromLocally(it) }
 
-        //for
-        val iteratorList = sensorsArr?.listIterator()
+        val alarmSensor = UserSession.instance.alarmSensors
+        val iteratorList = alarmSensor?.listIterator()
         while (iteratorList != null && iteratorList.hasNext()) {
             val sensorItem = iteratorList.next()
-            if (sensorItem.getLatitude() != null
-                && sensorItem.getLongtitude() != null
+            if (sensorItem.latitude != null
+                && sensorItem.longitude != null
             ) {
-
-                val sensorAlarm = getSensorAlarmBySensor(sensorItem)
-
-                if (sensorAlarm != null) {
+                if (sensorItem != null) {
 
                     //if time out then remove the sensor from alarm list
-                    if (isSensorAlarmTimeout(sensorAlarm)) {
-                        UserSession.instance.alarmSensors?.remove(sensorAlarm)
-                        showSensorMarker(sensorItem)
+                    if (isSensorAlarmTimeout(sensorItem)) {
+                        iteratorList.remove()
+                        //UserSession.instance.alarmSensors?.remove(sensorItem)
+                        //showSensorMarker(sensorItem)
                     } else {
                         //save the marker for update after timeout
-                        sensorAlarm.markerFeature = showSensorAlarmMarker(
+                        sensorItem.markerFeature = showSensorAlarmMarker(
                             sensorItem,
-                            sensorAlarm.type,
-                            sensorAlarm.typeIdx
+                            sensorItem.type,
+                            sensorItem.typeIdx
                         )
                     }
 
@@ -293,28 +291,118 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                     //show sensor marker
                     showSensorMarker(sensorItem)
                 }
+            }
+        }
 
+//        //get sensors from locally
+//        val sensorsArr = activity?.let { getSensorsFromLocally(it) }
+//
+//        //for
+//        val iteratorList = sensorsArr?.listIterator()
+//        while (iteratorList != null && iteratorList.hasNext()) {
+//            val sensorItem = iteratorList.next()
+//            if (sensorItem.getLatitude() != null
+//                && sensorItem.getLongtitude() != null
+//            ) {
+//
+//                val sensorAlarm = getSensorAlarmBySensor(sensorItem)
+//
+//                if (sensorAlarm != null) {
+//
+//                    //if time out then remove the sensor from alarm list
+//                    if (isSensorAlarmTimeout(sensorAlarm)) {
+//                        UserSession.instance.alarmSensors?.remove(sensorAlarm)
+//                        showSensorMarker(sensorItem)
+//                    } else {
+//                        //save the marker for update after timeout
+//                        sensorAlarm.markerFeature = showSensorAlarmMarker(
+//                            sensorItem,
+//                            sensorAlarm.type,
+//                            sensorAlarm.typeIdx
+//                        )
+//                    }
+//
+//                } else {
+//                    //show sensor marker
+//                    showSensorMarker(sensorItem)
+//                }
+//
+//            }
+//        }
+    }
+
+
+    //Bug fixed :disable getting permanent current location
+    //get current location from gps
+//    private fun gotoMyLocation() {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            activity?.startForegroundService(Intent(context, ServiceFindLocation::class.java))
+//        } else {
+//            activity?.startService(Intent(context, ServiceFindLocation::class.java))
+//        }
+//    }
+
+    //get current location from gps
+    private fun gotoMySingleLocation() {
+
+        if (checkLastAlarm()) {
+            showLocationLastAlarm()
+        } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                activity?.startForegroundService(
+                    Intent(
+                        context,
+                        ServiceFindSingleLocation::class.java
+                    )
+                )
+            } else {
+                activity?.startService(Intent(context, ServiceFindSingleLocation::class.java))
             }
         }
     }
 
+    /**
+     * show location by location of the last alarm
+     *
+     */
+    private fun showLocationLastAlarm() {
+        val location = Location("last alarm")
+        if (latitude == null || longitude == null)
+            return
 
-    //get current location from gps
-    private fun gotoMyLocation() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            activity?.startForegroundService(Intent(context, ServiceFindLocation::class.java))
+        location.latitude = latitude!!
+        location.longitude = longitude!!
+
+        if (location != null) {
+            //save locally the current location
+            setStringInPreference(
+                activity,
+                CURRENT_LATITUDE_PREF,
+                location.latitude.toString()
+            )
+            setStringInPreference(
+                activity,
+                CURRENT_LONGTUDE_PREF,
+                location.longitude.toString()
+            )
+            showLocation(location)
         } else {
-            activity?.startService(Intent(context, ServiceFindLocation::class.java))
+            Toast.makeText(activity, "error in location2", Toast.LENGTH_LONG).show()
         }
     }
 
-    //get current location from gps
-    private fun gotoMySingleLocation() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            activity?.startForegroundService(Intent(context, ServiceFindSingleLocation::class.java))
-        } else {
-            activity?.startService(Intent(context, ServiceFindSingleLocation::class.java))
-        }
+    var latitude: Double? = null
+    var longitude: Double? = null
+
+    /**
+     * check if the last location is saved
+     */
+    private fun checkLastAlarm(): Boolean {
+
+        latitude = getDoubleInPreference(requireContext(), LAST_LATITUDE, -1.0)
+        longitude = getDoubleInPreference(requireContext(), LAST_LONGETITUDE, -1.0)
+
+        return latitude != -1.0 && longitude != -1.0
     }
 
     //for test :enter manually alarm
@@ -370,41 +458,50 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
         return isValid
     }
 
-    //show marker of sensor
+    /***
+     * show marker of sensor
+     * TODO temporary cancel this function
+     */
     private fun showSensorMarker(sensorItem: Sensor) {
 
-        if (mapView == null || sensorItem == null) {
-            return
-        }
-
-        val loc = LatLng(
-            sensorItem.getLatitude()!!,
-            sensorItem.getLongtitude()!!
-        )
-
-
-        if (sensorItem.isArmed()) {
-
-            addMarker(
-                loc,
-                GREEN_ICON_ID,
-                sensorItem.getName(),
-                sensorItem.getType()
-            )
-
-        } else {
-            addMarker(
-                loc,
-                GRAY_ICON_ID,
-                sensorItem.getName(),
-                sensorItem.getType()
-            )
-
-        }
+//        if (mapView == null || sensorItem == null) {
+//            return
+//        }
+//
+//        val loc = LatLng(
+//            sensorItem.getLatitude()!!,
+//            sensorItem.getLongtitude()!!
+//        )
+//
+//
+//        if (sensorItem.isArmed()) {
+//
+//            addMarker(
+//                loc,
+//                GREEN_ICON_ID,
+//                sensorItem.getName(),
+//                sensorItem.getType()
+//            )
+//
+//        } else {
+//            addMarker(
+//                loc,
+//                GRAY_ICON_ID,
+//                sensorItem.getName(),
+//                sensorItem.getType()
+//            )
+//
+//        }
     }
 
-    //show marker of sensor alarm
-    private fun showSensorAlarmMarker(sensorItem: Sensor, type: String, typeIdx: Int?): Feature? {
+    /***
+     * show marker of sensor alarm
+     */
+    private fun showSensorAlarmMarker(
+        sensorItem: AlarmSensor,
+        type: String,
+        typeIdx: Int?
+    ): Feature? {
 
         if (mapView == null) {
             return null
@@ -412,76 +509,95 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
 
         val loc: LatLng? =
             LatLng(
-                sensorItem.getLatitude()!!,
-                sensorItem.getLongtitude()!!
+                sensorItem.latitude!!,
+                sensorItem.longitude!!
             )
 
         var alarmTypeIcon: Feature? = null
 
-        //car ,intruder and off are relevant when type = seismic
-        if (sensorItem.getTypeID() == SEISMIC_TYPE) {
-            //set icon according to type alarm
-            alarmTypeIcon =
-                when (typeIdx) {
-                    ALARM_CAR -> {
-                        loc?.let { addMarker(it, CAR_ICON_ID, sensorItem.getName(), type) }
-                    }
-                    ALARM_INTRUDER -> {
-                        loc?.let { addMarker(it, INTRUDER_ICON_ID, sensorItem.getName(), type) }
-                    }
-                    ALARM_SENSOR_OFF -> {
-                        loc?.let { addMarker(it, SENSOR_OFF_ICON_ID, sensorItem.getName(), type) }
-                    }
-                    //ALARM_LOW_BATTERY->context?.let { con -> convertBitmapToBitmapDiscriptor(con,R.drawable.ic_alarm_low_battery)}
-                    else -> {
-                        loc?.let { addMarker(it, RED_ICON_ID, sensorItem.getName(), type) }
-                    }
+        alarmTypeIcon =
+            when (typeIdx) {
+                ALARM_CAR -> {
+                    loc?.let { addMarker(it, CAR_ICON_ID, sensorItem.alarmSensorId, type) }
                 }
-        } else {
-            alarmTypeIcon =
-                when (sensorItem.getTypeID()) {
-                    PIR_TYPE -> loc?.let {
-                        addMarker(
-                            it,
-                            PIR_ICON_ID,
-                            sensorItem.getName(),
-                            sensorItem.getType()
-                        )
-                    }
-                    RADAR_TYPE -> loc?.let {
-                        addMarker(
-                            it,
-                            RADAR_ICON_ID,
-                            sensorItem.getName(),
-                            sensorItem.getType()
-                        )
-                    }
-                    VIBRATION_TYPE -> loc?.let {
-                        addMarker(
-                            it,
-                            VIBRATION_ICON_ID,
-                            sensorItem.getName(),
-                            sensorItem.getType()
-                        )
-                    }
-                    else -> {
-                        loc?.let {
-                            addMarker(
-                                it,
-                                RED_ICON_ID,
-                                sensorItem.getName(),
-                                sensorItem.getType()
-                            )
-                        }
-                    }
+                ALARM_INTRUDER -> {
+                    loc?.let { addMarker(it, INTRUDER_ICON_ID, sensorItem.alarmSensorId, type) }
                 }
-        }
+                ALARM_SENSOR_OFF -> {
+                    loc?.let { addMarker(it, SENSOR_OFF_ICON_ID, sensorItem.alarmSensorId, type) }
+                }
+                //ALARM_LOW_BATTERY->context?.let { con -> convertBitmapToBitmapDiscriptor(con,R.drawable.ic_alarm_low_battery)}
+                else -> {
+                    loc?.let { addMarker(it, RED_ICON_ID, sensorItem.alarmSensorId, type) }
+                }
+            }
+
+//        //car ,intruder and off are relevant when type = seismic
+//        if (sensorItem.getTypeID() == SEISMIC_TYPE) {
+//            //set icon according to type alarm
+//            alarmTypeIcon =
+//                when (typeIdx) {
+//                    ALARM_CAR -> {
+//                        loc?.let { addMarker(it, CAR_ICON_ID, sensorItem.getName(), type) }
+//                    }
+//                    ALARM_INTRUDER -> {
+//                        loc?.let { addMarker(it, INTRUDER_ICON_ID, sensorItem.getName(), type) }
+//                    }
+//                    ALARM_SENSOR_OFF -> {
+//                        loc?.let { addMarker(it, SENSOR_OFF_ICON_ID, sensorItem.getName(), type) }
+//                    }
+//                    //ALARM_LOW_BATTERY->context?.let { con -> convertBitmapToBitmapDiscriptor(con,R.drawable.ic_alarm_low_battery)}
+//                    else -> {
+//                        loc?.let { addMarker(it, RED_ICON_ID, sensorItem.getName(), type) }
+//                    }
+//                }
+//        } else {
+//            alarmTypeIcon =
+//                when (sensorItem.getTypeID()) {
+//                    PIR_TYPE -> loc?.let {
+//                        addMarker(
+//                            it,
+//                            PIR_ICON_ID,
+//                            sensorItem.getName(),
+//                            sensorItem.getType()
+//                        )
+//                    }
+//                    RADAR_TYPE -> loc?.let {
+//                        addMarker(
+//                            it,
+//                            RADAR_ICON_ID,
+//                            sensorItem.getName(),
+//                            sensorItem.getType()
+//                        )
+//                    }
+//                    VIBRATION_TYPE -> loc?.let {
+//                        addMarker(
+//                            it,
+//                            VIBRATION_ICON_ID,
+//                            sensorItem.getName(),
+//                            sensorItem.getType()
+//                        )
+//                    }
+//                    else -> {
+//                        loc?.let {
+//                            addMarker(
+//                                it,
+//                                RED_ICON_ID,
+//                                sensorItem.getName(),
+//                                sensorItem.getType()
+//                            )
+//                        }
+//                    }
+//                }
+//        }
 
 
         return alarmTypeIcon
     }
 
-    //check if the alarm sensor is in duration
+    /**
+     * check if the alarm sensor is in duration
+     */
     private fun isSensorAlarmTimeout(alarmProcess: AlarmSensor?): Boolean {
 
         val timeout = getLongInPreference(
@@ -993,12 +1109,13 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                         //detect map dragging
                         mapboxMap.addOnMoveListener(this)
 
-                        myMapboxMap?.addOnMapLongClickListener { point ->
-                            currentLongitude = point.longitude
-                            currentLatitude = point.latitude
-                            showDialogSensorsList()
-                            true
-                        }
+                        //Bug fixed: no need to open dialog to add sensor
+//                        myMapboxMap?.addOnMapLongClickListener { point ->
+//                            currentLongitude = point.longitude
+//                            currentLatitude = point.latitude
+//                            showDialogSensorsList()
+//                            true
+//                        }
 
                         //for markers
                         markerViewManager = MarkerViewManager(mapView, myMapboxMap)
@@ -1016,7 +1133,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
 
                         showLocation(location)
 
-                        gotoMyLocation()
+                        gotoMySingleLocation()
                     }
                 }
             }
@@ -1147,28 +1264,32 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
 //                alarmSensor?.let { UserSession.instance.alarmSensors?.add(it) }
                 showMarkers()
 
-            } else if (inn.action == GET_CURRENT_LOCATION_KEY) {
-                val location: Location? = inn.getParcelableExtra(CURRENT_LOCATION)
-                if (location != null) {
-                    //save locally the current location
-                    setStringInPreference(
-                        activity,
-                        CURRENT_LATITUDE_PREF,
-                        location.latitude.toString()
-                    )
-                    setStringInPreference(
-                        activity,
-                        CURRENT_LONGTUDE_PREF,
-                        location.longitude.toString()
-                    )
-                    //clear the current marker
-                    markersList?.remove(currentLocationMarker)
-                    showMyLocationMarker(location)
-                    //showLocation(location)
-                } else {
-                    Toast.makeText(activity, "error in location2", Toast.LENGTH_LONG).show()
-                }
-            } else if (inn.action == GET_CURRENT_SINGLE_LOCATION_KEY) {
+            }
+//            else if (inn.action == GET_CURRENT_LOCATION_KEY) {
+//                val location: Location? = inn.getParcelableExtra(CURRENT_LOCATION)
+//                if (location != null) {
+//                    //save locally the current location
+//                    setStringInPreference(
+//                        activity,
+//                        CURRENT_LATITUDE_PREF,
+//                        location.latitude.toString()
+//                    )
+//                    setStringInPreference(
+//                        activity,
+//                        CURRENT_LONGTUDE_PREF,
+//                        location.longitude.toString()
+//                    )
+//                    //clear the current marker
+//                    markersList?.remove(currentLocationMarker)
+//                    showMyLocationMarker(location)
+//                    //move the camera
+//                    //moveCamera()
+//                    //showLocation(location)
+//                } else {
+//                    Toast.makeText(activity, "error in location2", Toast.LENGTH_LONG).show()
+//                }
+//            }
+            else if (inn.action == GET_CURRENT_SINGLE_LOCATION_KEY) {
                 val location: Location? = inn.getParcelableExtra(CURRENT_LOCATION)
                 if (location != null) {
                     //save locally the current location
@@ -1190,14 +1311,41 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                 showMarkers()
             } else if (inn.action == STOP_ALARM_SOUND) {
                 //stopPlayingAlarm()
-            } else if (inn.action == ACTION_TOGGLE_TEST_MODE) {
-                if (fbTest?.visibility == View.VISIBLE) {
-                    fbTest?.visibility = View.GONE
-                } else {
-                    fbTest?.visibility = View.VISIBLE
-                }
             }
+            ////Bugs fixed: disable alarm test
+//            else if (inn.action == ACTION_TOGGLE_TEST_MODE) {
+//                if (fbTest?.visibility == View.VISIBLE) {
+//                    fbTest?.visibility = View.GONE
+//                } else {
+//                    fbTest?.visibility = View.VISIBLE
+//                }
+//            }
 
+        }
+    }
+
+    /**
+     * move the camera
+     */
+    private fun moveCamera() {
+        myLocate?.let {
+            //load the camera
+            if (myLocate != null && myLocate?.latitude != null &&
+                myLocate?.longitude != null
+            ) {
+
+                val cameraPosition = CameraPosition.Builder()
+                    .target(LatLng(myLocate?.latitude!!, myLocate?.longitude!!))
+                    .zoom(15.0)
+                    .tilt(20.0)
+                    .build()
+
+
+                // Move camera to new position
+                myMapboxMap!!.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
+
+
+            }
         }
     }
 

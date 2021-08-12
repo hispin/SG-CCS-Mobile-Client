@@ -51,7 +51,7 @@ const val CREATE_ALARM_TYPE_KEY = "CreateAlarmTypeKey"
 const val CREATE_ALARM_TYPE_INDEX_KEY = "CreateAlarmTypeIndexKey"
 const val CREATE_ALARM_IS_ARMED = "CreateAlarmIsArmedKey"
 const val MAP_TYPE_KEY = "mapTypeKey"
-const val SENSOR_TYPE_INDEX_KEY = "SensorTypeId"
+const val ALARM_TYPE_INDEX_KEY = "SensorTypeId"
 
 
 const val ERROR_RESP = "-1"
@@ -74,6 +74,9 @@ const val ALARM_SENSOR_OFF = 3//"sensor disconnected"
 const val ALARM_LOW_BATTERY = "motion"
 
 const val USB_DEVICE_CONNECT_STATUS = "usbDeviceConnect"
+const val REGISTER_TOKEN_STATUS = "register_token_status"
+const val TOKEN_REGISTRATION_STATUS_KEY = "register_token_status_key"
+
 
 const val ACTION_USB_RESPONSE_CACHE = "handle.USB_RESPONSE_CACHE"
 const val USB_CACHE_RESPONSE_KEY = "usb_cache_response_key"
@@ -131,3 +134,9 @@ const val SEISMIC_TYPE = 0L
 const val PIR_TYPE = 1L
 const val RADAR_TYPE = 2L
 const val VIBRATION_TYPE = 3L
+
+const val REGISTRATION_ID_KEY = "registrationID"
+const val FCM_TOKEN_KEY = "FCMtoken"
+
+const val LAST_LATITUDE = "lastLatitude"
+const val LAST_LONGETITUDE = "lastLongetitude"

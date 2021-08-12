@@ -11,14 +11,25 @@ import android.view.WindowManager
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import com.sensoguard.ccsmobileclient.R
 import com.sensoguard.ccsmobileclient.classes.MyExceptionHandler
 import com.sensoguard.ccsmobileclient.global.CURRENT_ITEM_TOP_MENU_KEY
+import com.sensoguard.ccsmobileclient.global.ToastNotify
+import com.sensoguard.ccsmobileclient.services.MyFirebaseMessagingService
+import com.sensoguard.ccsmobileclient.services.RegistrationIntentService
+import com.sensoguard.ccsmobileclient.services.ServiceHandleAlarms
+import timber.log.Timber
 
 //import io.fabric.sdk.android.Fabric
 
 
 class MainActivity : ParentActivity() {
+
+    private val TAG: String = "MainActivity"
+
+    private val PLAY_SERVICES_RESOLUTION_REQUEST = 9000
 
     //private var clickConsSensorTable: ConstraintLayout? = null
     private var clickConsMap: ConstraintLayout? = null
@@ -27,6 +38,37 @@ class MainActivity : ParentActivity() {
     private var tvShowVer: TextView? = null
     //private var btnTest: AppCompatButton? = null
 
+    fun registerWithNotificationHubs() {
+        if (checkPlayServices()) {
+            // Start IntentService to register this application with FCM.
+            val intent = Intent(this, RegistrationIntentService::class.java)
+            //intent.putExtra("myTag",myTag)
+            startService(intent)
+        }
+    }
+
+    /**
+     * Check the device to make sure it has the Google Play Services APK. If
+     * it doesn't, display a dialog box that enables  users to download the APK from
+     * the Google Play Store or enable it in the device's system settings.
+     */
+    private fun checkPlayServices(): Boolean {
+
+        val apiAvailability = GoogleApiAvailability.getInstance()
+        val resultCode = apiAvailability.isGooglePlayServicesAvailable(this)
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (apiAvailability.isUserResolvableError(resultCode)) {
+                apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
+                    .show()
+            } else {
+                Timber.i("This device is not supported by Google Play Services.")
+                ToastNotify("This device is not supported by Google Play Services.", this)
+                finish()
+            }
+            return false
+        }
+        return true
+    }
 
     override fun onStart() {
         super.onStart()
@@ -34,6 +76,11 @@ class MainActivity : ParentActivity() {
         val verName = packageManager.getPackageInfo(packageName, 0).versionName
         val verTitle = "version:$verName"
         tvShowVer?.text = verTitle
+
+        registerWithNotificationHubs()
+
+        //send context for accept message in future
+        MyFirebaseMessagingService.createChannelAndHandleNotifications(applicationContext)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,6 +110,20 @@ class MainActivity : ParentActivity() {
 
         //for testing
         //saveMyAccount()
+        //start service for listening to alarms
+        startListenerToAlarms()
+    }
+
+    /**
+     * start service for listening to alarms
+     */
+    private fun startListenerToAlarms() {
+        //start listener to alarm
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(Intent(this, ServiceHandleAlarms::class.java))
+        } else {
+            startService(Intent(this, ServiceHandleAlarms::class.java))
+        }
     }
 
     //for testing :save locally the Email account details
@@ -189,13 +250,6 @@ class MainActivity : ParentActivity() {
             val fragmentManager = supportFragmentManager
             val fragmentTransaction = fragmentManager.beginTransaction()
 
-
-//            when (tag) {
-//                "enterReservationFragment" -> {
-//                    fragmentTransaction.setCustomAnimations(R.animator.slide_up_in, 0)
-//                }
-//            }
-
             if (add_to_back_stack) {
                 fragmentTransaction.addToBackStack(fragment.tag)
             }
@@ -209,4 +263,5 @@ class MainActivity : ParentActivity() {
         }
 
     }
+
 }

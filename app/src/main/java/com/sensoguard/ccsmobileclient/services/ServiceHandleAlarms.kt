@@ -23,6 +23,7 @@ import com.sensoguard.ccsmobileclient.classes.Sensor
 import com.sensoguard.ccsmobileclient.global.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.mail.internet.InternetAddress
@@ -74,54 +75,68 @@ class ServiceHandleAlarms : ParentService() {
 
     private val usbReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            Log.d(TAG, "accept alarm")
+            Timber.d("accept alarm")
             when (intent.action) {
                 CREATE_ALARM_KEY -> {
                     val alarmSensorId = intent.getStringExtra(CREATE_ALARM_ID_KEY)
                     val type = intent.getStringExtra(CREATE_ALARM_TYPE_KEY)
-                    val sensorTypeId = intent.getLongExtra(SENSOR_TYPE_INDEX_KEY, -1)
+                    val alarmTypeId = intent.getLongExtra(ALARM_TYPE_INDEX_KEY, -1)
                     val date = getStrDateTimeByMilliSeconds(
                         Calendar.getInstance().timeInMillis,
                         "dd/MM/yy kk:mm:ss",
                         context
                     )
 
-                    var msg: String? = null
-                    if (sensorTypeId == SEISMIC_TYPE) {
-                        msg = resources.getString(
-                            R.string.email_content,
-                            type,
-                            alarmSensorId,
-                            date
-                        )// "$type alarm from unit $alarmSensorId "
-                        Toast.makeText(
-                            context,
-                            "$type alarm from unit $alarmSensorId ",
-                            Toast.LENGTH_LONG
-                        )
-                            .show()
-                    } else {
-                        val values = resources.getStringArray(R.array.sensor_type)
+                    val msg = resources.getString(
+                        R.string.email_content,
+                        type,
+                        alarmSensorId,
+                        date
+                    )
 
-                        val idx = sensorTypeId.toInt()
-                        var sensorType = ""
-                        if (idx >= 0 && idx < values.size) {
-                            sensorType = values[idx]
-                        }
+                    Toast.makeText(
+                        context,
+                        "$type alarm from unit $alarmSensorId ",
+                        Toast.LENGTH_LONG
+                    )
+                        .show()
 
-                        msg = resources.getString(
-                            R.string.email_content,
-                            sensorType,
-                            alarmSensorId,
-                            date
-                        )
-                        Toast.makeText(
-                            context,
-                            "$sensorType alarm from unit $alarmSensorId ",
-                            Toast.LENGTH_LONG
-                        )
-                            .show()
-                    }
+//                    var msg: String? = null
+//                    if (sensorTypeId == SEISMIC_TYPE) {
+//                        msg = resources.getString(
+//                            R.string.email_content,
+//                            type,
+//                            alarmSensorId,
+//                            date
+//                        )// "$type alarm from unit $alarmSensorId "
+//                        Toast.makeText(
+//                            context,
+//                            "$type alarm from unit $alarmSensorId ",
+//                            Toast.LENGTH_LONG
+//                        )
+//                            .show()
+//                    } else {
+//                        val values = resources.getStringArray(R.array.sensor_type)
+//
+//                        val idx = sensorTypeId.toInt()
+//                        var sensorType = ""
+//                        if (idx >= 0 && idx < values.size) {
+//                            sensorType = values[idx]
+//                        }
+//
+//                        msg = resources.getString(
+//                            R.string.email_content,
+//                            sensorType,
+//                            alarmSensorId,
+//                            date
+//                        )
+//                        Toast.makeText(
+//                            context,
+//                            "$sensorType alarm from unit $alarmSensorId ",
+//                            Toast.LENGTH_LONG
+//                        )
+//                            .show()
+//                    }
                     sendEmailBakground(msg)
                     //play sound and vibrate
                     playAlarmSound()
@@ -131,7 +146,7 @@ class ServiceHandleAlarms : ParentService() {
                 CREATE_ALARM_NOT_DEFINED_KEY -> {
                     val alarmSensorId = intent.getStringExtra(CREATE_ALARM_ID_KEY)
                     val type = intent.getStringExtra(CREATE_ALARM_TYPE_KEY)
-                    val sensorTypeId = intent.getLongExtra(SENSOR_TYPE_INDEX_KEY, -1)
+                    val sensorTypeId = intent.getLongExtra(ALARM_TYPE_INDEX_KEY, -1)
                     if (sensorTypeId == SEISMIC_TYPE) {
                         Toast.makeText(
                             context,
@@ -289,7 +304,7 @@ class ServiceHandleAlarms : ParentService() {
                         //inn.putExtra(CREATE_ALARM_LONGTITUDE_KEY,currentSensorLocally.getLongtitude())
                         inn.putExtra(CREATE_ALARM_TYPE_KEY, type)
                         inn.putExtra(CREATE_ALARM_TYPE_INDEX_KEY, typeIndex)
-                        inn.putExtra(SENSOR_TYPE_INDEX_KEY, currentSensorLocally.getTypeID())
+                        inn.putExtra(ALARM_TYPE_INDEX_KEY, currentSensorLocally.getTypeID())
                         sendBroadcast(inn)
 
                         //play sound and vibrate
@@ -597,7 +612,7 @@ class ServiceHandleAlarms : ParentService() {
                 }
 
                 val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setContentText("SG-Patrol is running")
+                    .setContentText("SG-CCS Mobile Client is running")
                     .setSmallIcon(getNotificationIcon())
                     .build()
 

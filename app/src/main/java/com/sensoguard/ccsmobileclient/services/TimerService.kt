@@ -149,7 +149,7 @@ class TimerService : ParentService() {
             }
 
             val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentText("SG-Patrol is running")
+                .setContentText("SG-CCS Mobile Client is running")
                 .setSmallIcon(getNotificationIcon())
                 .build()
 

@@ -2,13 +2,38 @@ package com.sensoguard.ccsmobileclient.global
 
 import android.content.Context
 
+//read Double share preference
+fun getDoubleInPreference(context: Context?, key: String, default: Double): Double? {
+    if (context == null) {
+        return null
+    }
+    val pref = context.getSharedPreferences(SHARED_PREF_FILE_NAME, Context.MODE_PRIVATE)
+    return java.lang.Double.longBitsToDouble(
+        pref.getLong(
+            key,
+            java.lang.Double.doubleToRawLongBits(default)
+        )
+    )
+}
+
+
+//write Long to share preference
+fun setDoubleInPreference(context: Context?, key: String, value: Double) {
+    if (context == null) {
+        return
+    }
+    val pref = context.getSharedPreferences(SHARED_PREF_FILE_NAME, Context.MODE_PRIVATE)
+    val edit = pref.edit()
+    edit.putLong(key, java.lang.Double.doubleToRawLongBits(value))
+    edit.apply()
+}
 
 //read Long share preference
 fun getLongInPreference(context: Context?, key: String, default: Long): Long? {
     if (context == null) {
         return null
     }
-    val pref=context.getSharedPreferences(SHARED_PREF_FILE_NAME, Context.MODE_PRIVATE)
+    val pref = context.getSharedPreferences(SHARED_PREF_FILE_NAME, Context.MODE_PRIVATE)
     return pref.getLong(key, default)
 }
 

@@ -5,8 +5,8 @@
     <string name="csv">csv</string>
     <string name="dialog_new_sensor_title">הגדר חיישנים</string>
     <string name="invalid_mum_sensors">מס\' חיישנים לא תקין</string>
-    <string name="name_title">שם חיישן</string>
-    <string name="id_title">מספר</string>
+    <string name="name_title">אזור</string>
+    <string name="id_title">רכזת</string>
     <string name="map_location_title">מיקום</string>
     <string name="status_title">מצב</string>
     <string name="type_title">סוג</string>
@@ -64,7 +64,7 @@
     <string name="activate">הפעל</string>
     <string name="error">שגיאה</string>
     <string name="general_desc">description</string>
-    <string name="email_subject">My Code for SG-Patrol App</string>
+    <string name="email_subject">My Code for SG-CCS Mobile Client App</string>
     <string name="delete_all">מחק הכל</string>
     <string name="do_you_really_want_delete_all_alarm">Do you realy want to delete all alarms</string>
     <string name="receiver_disconnected">המקלט מנותק</string>

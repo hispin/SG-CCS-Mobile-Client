@@ -7,8 +7,8 @@
     <string name="csv">csv</string>
     <string name="dialog_new_sensor_title">Configurer les détecteurs</string>
     <string name="invalid_mum_sensors">nombre de capteurs invalide</string>
-    <string name="name_title">NOM</string>
-    <string name="id_title">ID</string>
+    <string name="name_title">ZONE</string>
+    <string name="id_title">HUB</string>
     <string name="map_location_title">MIS</string>
     <string name="status_title">ACTIF</string>
     <string name="type_title">TYPE</string>
@@ -65,7 +65,7 @@
     <string name="activate">Activer</string>
     <string name="error">Erreur</string>
     <string name="general_desc">la description</string>
-    <string name="email_subject">Mon code pour l\'application  SG-Patrol</string>
+    <string name="email_subject">Mon code pour l\'application  SG-CCS Mobile Client</string>
     <string name="delete_all">Supprimer tout</string>
     <string name="do_you_really_want_delete_all_alarm">Voulez-vous vraiment supprimer toutes les alarmes</string>
     <string name="receiver_disconnected">Récepteur déconnecté</string>
@@ -91,7 +91,7 @@
     <string name="cancel">ANNULER</string>
     <string name="email_setting">Paramètres de messagerie</string>
     <string name="an_alert_was_received">Une alerte a été reçue</string>
-    <string name="email_content">Accepter %1$s  l\'alarme de vibration de l\'unité %2$s  au %3$s</string>
+    <string name="email_content">%1$s  l\'alarme de vibration l\'unité %2$s  au %3$s</string>
     <string name="mail_address_title">Email Address:</string>
     <string name="outgoing_mail_server_title">Serveur sortant</string>
     <string name="user_name">User name</string>
