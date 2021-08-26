@@ -124,7 +124,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintHeight_default="percent"
             app:layout_constraintHeight_percent="0.270"
-            android:layout_marginTop="2.7dp"
+            android:layout_marginTop="40dp"
             android:layoutDirection="ltr"
     >
 

@@ -93,7 +93,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         String imagePath = inn.getExtras().getString("image");
 
         ///test from firebase
-        message = inn.getExtras().getString("gcm.notification.body");
+        //message = inn.getExtras().getString("gcm.notification.body");
 
 
         if (title != null)

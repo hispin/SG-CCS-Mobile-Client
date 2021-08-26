@@ -91,7 +91,7 @@
     <string name="cancel">ANNULLA</string>
     <string name="email_setting">Impostazioni e-mail</string>
     <string name="an_alert_was_received">È stato ricevuto un avviso</string>
-    <string name="email_content">Accetta %1$s Allarme vibrazione dall\'unità %2$s  in %3$s</string>
+    <string name="email_content">allarme per %1$s da %2$s nel %3$s</string>
     <string name="mail_address_title">Email Address:</string>
     <string name="outgoing_mail_server_title">Server in uscita</string>
     <string name="user_name">User name</string>

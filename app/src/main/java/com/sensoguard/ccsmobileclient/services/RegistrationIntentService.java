@@ -152,7 +152,7 @@ public class RegistrationIntentService extends IntentService {
         sendBroadcast(inn);
 
 
-        showToast(resultString);
+        //showToast(resultString);
     }
 
     /**

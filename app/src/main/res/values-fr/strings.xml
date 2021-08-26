@@ -90,7 +90,7 @@
     <string name="cancel">ANNULER</string>
     <string name="email_setting">Paramètres de messagerie</string>
     <string name="an_alert_was_received">Une alerte a été reçue</string>
-    <string name="email_content">%1$s  l\'alarme de vibration l\'unité %2$s  au %3$s</string>
+    <string name="email_content">alarme de %1$s de %2$s en %3$s</string>
     <string name="mail_address_title">Email Address:</string>
     <string name="outgoing_mail_server_title">Serveur sortant</string>
     <string name="user_name">User name</string>

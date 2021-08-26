@@ -241,8 +241,10 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                     .build()
 
 
-                // Move camera to new position
-                myMapboxMap!!.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
+                if (myMapboxMap != null) {
+                    // Move camera to new position
+                    myMapboxMap!!.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
+                }
 
                 showMarkers()
 
