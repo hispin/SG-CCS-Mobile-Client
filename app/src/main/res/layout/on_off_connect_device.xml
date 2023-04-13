@@ -23,7 +23,7 @@
             app:layout_constraintHorizontal_bias="0.054"
     />
 
-<tools:ToggleButton
+<ToggleButton
         android:id="@+id/togChangeStatus"
         android:text="ToggleButton"
         android:layout_width="25dp"

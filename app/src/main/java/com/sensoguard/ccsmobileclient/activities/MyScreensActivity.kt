@@ -21,7 +21,10 @@ import android.widget.ToggleButton
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.*
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.lifecycle.ViewModelProviders
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
@@ -29,15 +32,16 @@ import com.sensoguard.ccsmobileclient.R
 import com.sensoguard.ccsmobileclient.classes.AlarmSensor
 import com.sensoguard.ccsmobileclient.classes.GeneralItemMenu
 import com.sensoguard.ccsmobileclient.controler.ViewModelListener
-import com.sensoguard.ccsmobileclient.fragments.*
+import com.sensoguard.ccsmobileclient.fragments.AlarmsLogFragment
+import com.sensoguard.ccsmobileclient.fragments.ConfigurationFragment
+import com.sensoguard.ccsmobileclient.fragments.MapmobFragment
 import com.sensoguard.ccsmobileclient.global.*
 import com.sensoguard.ccsmobileclient.interfaces.OnFragmentListener
 import com.sensoguard.ccsmobileclient.services.ServiceConnectSensor
-import kotlinx.android.synthetic.main.activity_my_screens.*
 import java.util.*
 
 
-class MyScreensActivity : ParentActivity(), OnFragmentListener, java.util.Observer {
+class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
 
 
     //private var clickHundler: ClickHandler? = null
@@ -403,7 +407,7 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, java.util.Observ
         })
 
         //relate the tab layout to viewpager because we need to add the icons
-        tabs.setupWithViewPager(vPager)
+        tabs.setupWithViewPager(viewPager)
 //        tabs.getTabAt(0)?.icon = ContextCompat.getDrawable(
 //            this@MyScreensActivity,
 //            R.drawable.selected_sensor_tab

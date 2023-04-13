@@ -13,10 +13,7 @@ import android.os.Looper
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.*
 import com.sensoguard.ccsmobileclient.R
 import com.sensoguard.ccsmobileclient.global.CURRENT_LOCATION
 import com.sensoguard.ccsmobileclient.global.GET_CURRENT_SINGLE_LOCATION_KEY
@@ -29,11 +26,13 @@ class ServiceFindSingleLocation : Service() {
         override fun onLocationResult(locationResult: LocationResult) {
             run {
                 //Log.d(TAG,"get location")
-                location = locationResult.lastLocation
-                val inn = Intent(GET_CURRENT_SINGLE_LOCATION_KEY)
-                inn.putExtra(CURRENT_LOCATION, location)
-                sendBroadcast(inn)
-                stopSelf()
+                if (locationResult.lastLocation != null) {
+                    location = locationResult.lastLocation!!
+                    val inn = Intent(GET_CURRENT_SINGLE_LOCATION_KEY)
+                    inn.putExtra(CURRENT_LOCATION, location)
+                    sendBroadcast(inn)
+                    stopSelf()
+                }
             }
         }
     }
@@ -52,7 +51,7 @@ class ServiceFindSingleLocation : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         //FusedLocationProviderClient is for interacting with the location using fused location provider
-        fusedLocationProviderClient = FusedLocationProviderClient(this)
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
         locationRequest =
             LocationRequest().setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY).setInterval(10000)
                 .setFastestInterval(1000).setNumUpdates(1)

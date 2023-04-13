@@ -14,7 +14,6 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> <!-- <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> -->
     <uses-feature android:name="android.hardware.location.gps" />
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -26,13 +25,15 @@
     <application
             android:name="com.sensoguard.ccsmobileclient.LSccsApp"
             android:allowBackup="true"
-            android:fullBackupContent="@xml/my_backup"
+            android:dataExtractionRules="@xml/my_backup"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
             android:requestLegacyExternalStorage="true"
             android:roundIcon="@mipmap/ic_launcher"
             android:supportsRtl="true"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            tools:targetApi="s">
         <service
                 android:name="com.sensoguard.ccsmobileclient.services.TimerGeneralService"
                 android:exported="false"
@@ -48,7 +49,8 @@
         <service
                 android:name="com.sensoguard.ccsmobileclient.services.ParentService"
                 android:enabled="true"
-                android:exported="true" />
+                android:exported="true"
+                android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <activity android:name="com.sensoguard.ccsmobileclient.activities.ParentActivity" />
         <activity android:name="com.sensoguard.ccsmobileclient.activities.DownloadOfflineTilesActivity" />
@@ -56,7 +58,7 @@
         <!-- android:resource="@mipmap/ic_launcher" /> -->
         <activity
                 android:name="com.sensoguard.ccsmobileclient.activities.InitAppActivity"
-                android:screenOrientation="portrait"
+                android:exported="true"
                 android:theme="@style/Theme.AppCompat.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -65,15 +67,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-                android:name="com.sensoguard.ccsmobileclient.activities.ActivationActivity"
-                android:screenOrientation="portrait" />
-        <activity
-                android:name="com.sensoguard.ccsmobileclient.activities.MainActivity"
-                android:screenOrientation="portrait" />
+        <activity android:name="com.sensoguard.ccsmobileclient.activities.ActivationActivity" />
+        <activity android:name="com.sensoguard.ccsmobileclient.activities.MainActivity" />
         <activity
                 android:name="com.sensoguard.ccsmobileclient.activities.MyScreensActivity"
-                android:screenOrientation="portrait"
                 android:windowSoftInputMode="adjustPan" /> <!-- prevent hiding the field by softkey -->
         <uses-library
                 android:name="string"
@@ -90,6 +87,7 @@
                 android:name="com.sensoguard.ccsmobileclient.services.ServiceConnectSensor"
                 android:enabled="true"
                 android:exported="true"
+                android:permission="android.permission.BIND_JOB_SERVICE"
                 android:stopWithTask="false">
             <intent-filter>
                 <action android:name="com.androidexample.screenonoff.AEScreenOnOffService" />
@@ -97,11 +95,15 @@
         </service>
         <service
                 android:name="com.sensoguard.ccsmobileclient.services.ServiceFindLocation"
-                android:exported="true" />
+                android:exported="true"
+                android:permission="android.permission.BIND_JOB_SERVICE" />
         <service
                 android:name="com.sensoguard.ccsmobileclient.services.ServiceHandleAlarms"
-                android:exported="true" />
-        <service android:name="com.sensoguard.ccsmobileclient.services.ServiceFindSingleLocation" /> <!-- <receiver android:name=".ScreenOnOffReceiver"> -->
+                android:exported="true"
+                android:permission="android.permission.BIND_JOB_SERVICE" />
+        <service
+                android:name="com.sensoguard.ccsmobileclient.services.ServiceFindSingleLocation"
+                android:permission="android.permission.BIND_JOB_SERVICE" /> <!-- <receiver android:name=".ScreenOnOffReceiver"> -->
         <!-- <intent-filter> -->
         <!-- <action android:name="android.intent.action.SCREEN_ON" /> -->
         <!-- <action android:name="android.intent.action.SCREEN_OFF" /> -->
@@ -124,7 +126,7 @@
 
         <service
                 android:name=".services.RegistrationIntentService"
-                android:exported="false"></service>
+                android:exported="false" />
         <service
                 android:name=".services.MyFirebaseMessagingService"
                 android:directBootAware="true"

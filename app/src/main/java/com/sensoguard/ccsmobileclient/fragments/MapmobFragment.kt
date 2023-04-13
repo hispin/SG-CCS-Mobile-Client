@@ -13,7 +13,10 @@ import android.location.Location
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
-import android.view.*
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.*
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -39,7 +42,7 @@ import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
 import com.mapbox.mapboxsdk.plugins.markerview.MarkerViewManager
 import com.mapbox.mapboxsdk.style.expressions.Expression
 import com.mapbox.mapboxsdk.style.expressions.Expression.get
-import com.mapbox.mapboxsdk.style.layers.Property.*
+import com.mapbox.mapboxsdk.style.layers.Property.TEXT_ANCHOR_TOP
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory.*
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
@@ -52,8 +55,6 @@ import com.sensoguard.ccsmobileclient.global.*
 import com.sensoguard.ccsmobileclient.interfaces.OnAdapterListener
 import com.sensoguard.ccsmobileclient.services.ServiceFindLocation
 import com.sensoguard.ccsmobileclient.services.ServiceFindSingleLocation
-import kotlinx.android.synthetic.main.fragment_map_detects.*
-import kotlinx.android.synthetic.main.on_off_connect_device.*
 import java.util.*
 
 
@@ -453,7 +454,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
 
         if (editText.text.isNullOrBlank()) {
             editText.error =
-                resources.getString(com.sensoguard.ccsmobileclient.R.string.empty_field_error)
+                resources.getString(R.string.empty_field_error)
             isValid = false
         }
 
@@ -745,7 +746,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                         .withProperties(
                             iconImage(
                                 Expression.match(
-                                    Expression.get(ICON_PROPERTY),
+                                    get(ICON_PROPERTY),
                                     Expression.literal(GREEN_ICON_ID),
                                     Expression.stop(GRAY_ICON_ID, GRAY_ICON_ID),
                                     Expression.stop(BLUE_ICON_ID, BLUE_ICON_ID),
@@ -868,7 +869,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                             .withProperties(
                                 iconImage(
                                     Expression.match(
-                                        Expression.get(ICON_PROPERTY),
+                                        get(ICON_PROPERTY),
                                         Expression.literal(GREEN_ICON_ID),
                                         Expression.stop(GRAY_ICON_ID, GRAY_ICON_ID),
                                         Expression.stop(BLUE_ICON_ID, BLUE_ICON_ID),

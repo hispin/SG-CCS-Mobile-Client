@@ -1,22 +1,5 @@
 package com.sensoguard.ccsmobileclient.services;
 
-import android.app.IntentService;
-import android.content.Intent;
-import android.os.Handler;
-import android.os.Looper;
-import android.widget.Toast;
-
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
-import com.microsoft.windowsazure.messaging.NotificationHub;
-import com.sensoguard.ccsmobileclient.classes.NotificationSettings;
-
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-
-import timber.log.Timber;
-
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.FCM_TOKEN_KEY;
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.REGISTER_TOKEN_STATUS;
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.REGISTRATION_ID_KEY;
@@ -24,6 +7,21 @@ import static com.sensoguard.ccsmobileclient.global.ConstsKt.TOKEN_REGISTRATION_
 import static com.sensoguard.ccsmobileclient.global.SysMethodsSharedPrefKt.getStringInPreference;
 import static com.sensoguard.ccsmobileclient.global.SysMethodsSharedPrefKt.setBooleanInPreference;
 import static com.sensoguard.ccsmobileclient.global.SysMethodsSharedPrefKt.setStringInPreference;
+
+import android.app.IntentService;
+import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
+import android.widget.Toast;
+
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.microsoft.windowsazure.messaging.NotificationHub;
+import com.sensoguard.ccsmobileclient.classes.NotificationSettings;
+
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+
+import timber.log.Timber;
 
 public class RegistrationIntentService extends IntentService {
 
@@ -51,17 +49,29 @@ public class RegistrationIntentService extends IntentService {
         storedToken = null;
 
         try {
+
+
+            FirebaseMessaging.getInstance().getToken()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful() && task.getResult() != null) {
+                            FCM_token = task.getResult();
+                            Intent inn = new Intent("get.token.notification");
+                            inn.putExtra("token", FCM_token);
+                            sendBroadcast(inn);
+                            Timber.d("FCM Registration Token: %s", FCM_token);
+                        }
+                    });
             //get the token from firebase
-            FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(new OnSuccessListener<InstanceIdResult>() {
-                @Override
-                public void onSuccess(InstanceIdResult instanceIdResult) {
-                    FCM_token = instanceIdResult.getToken();
-                    Intent inn = new Intent("get.token.notification");
-                    inn.putExtra("token", FCM_token);
-                    sendBroadcast(inn);
-                    Timber.d("FCM Registration Token: %s", FCM_token);
-                }
-            });
+//            FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(new OnSuccessListener<InstanceIdResult>() {
+//                @Override
+//                public void onSuccess(InstanceIdResult instanceIdResult) {
+//                    FCM_token = instanceIdResult.getToken();
+//                    Intent inn = new Intent("get.token.notification");
+//                    inn.putExtra("token", FCM_token);
+//                    sendBroadcast(inn);
+//                    Timber.d("FCM Registration Token: %s", FCM_token);
+//                }
+//            });
 
             //even if it has been failed to e
             TimeUnit.SECONDS.sleep(1);

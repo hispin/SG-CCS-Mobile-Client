@@ -59,7 +59,7 @@ class MainActivity : ParentActivity() {
         if (resultCode != ConnectionResult.SUCCESS) {
             if (apiAvailability.isUserResolvableError(resultCode)) {
                 apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
-                    .show()
+                    ?.show()
             } else {
                 Timber.i("This device is not supported by Google Play Services.")
                 ToastNotify("This device is not supported by Google Play Services.", this)
@@ -140,8 +140,8 @@ class MainActivity : ParentActivity() {
     //hide unwanted badge of app icon (icon)
     private fun hideBudgetNotification() {
         val id = "my_channel_01"
-        val name = getString(com.sensoguard.ccsmobileclient.R.string.channel_name)
-        val descriptionText = getString(com.sensoguard.ccsmobileclient.R.string.channel_description)
+        val name = getString(R.string.channel_name)
+        val descriptionText = getString(R.string.channel_description)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val importance = NotificationManager.IMPORTANCE_LOW
             val mChannel =
@@ -231,11 +231,11 @@ class MainActivity : ParentActivity() {
 
     private fun initViews() {
         //clickConsSensorTable = findViewById(com.sensoguard.ccsmobileclient.R.id.clickConsSensorTable)
-        clickConsMap = findViewById(com.sensoguard.ccsmobileclient.R.id.clickConsMap)
+        clickConsMap = findViewById(R.id.clickConsMap)
         clickConsConfiguration =
-            findViewById(com.sensoguard.ccsmobileclient.R.id.clickConsConfiguration)
-        clickAlarmLog = findViewById(com.sensoguard.ccsmobileclient.R.id.clickAlarmLog)
-        tvShowVer = findViewById(com.sensoguard.ccsmobileclient.R.id.tvShowVer)
+            findViewById(R.id.clickConsConfiguration)
+        clickAlarmLog = findViewById(R.id.clickAlarmLog)
+        tvShowVer = findViewById(R.id.tvShowVer)
 
     }
 

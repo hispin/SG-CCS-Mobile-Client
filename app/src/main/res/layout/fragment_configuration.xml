@@ -2,7 +2,6 @@
 
 <ScrollView xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true">
@@ -140,7 +139,7 @@
                 app:layout_constraintHorizontal_bias="0.730"
                 app:layout_constraintStart_toStartOf="parent" />
 
-        <tools:ToggleButton
+        <ToggleButton
                 android:id="@+id/togChangeAlarmSound"
                 android:text="ToggleButton"
                 android:layout_width="44dp"
@@ -195,7 +194,7 @@
                 app:layout_constraintStart_toStartOf="parent"
         />
 
-        <tools:ToggleButton
+        <ToggleButton
                 android:id="@+id/togChangeAlarmVibrate"
                 android:text="ToggleButton"
                 android:layout_width="44dp"
@@ -542,7 +541,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-        <tools:ToggleButton
+        <ToggleButton
                 android:id="@+id/togIsSensorAlwaysShow"
                 android:layout_width="44dp"
                 android:layout_height="25dp"
@@ -608,7 +607,7 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:srcCompat="@drawable/ic_settings" />
 
-            <tools:ToggleButton
+            <ToggleButton
                     android:id="@+id/togForwardSensorEmail"
                     android:layout_width="44dp"
                     android:layout_height="25dp"

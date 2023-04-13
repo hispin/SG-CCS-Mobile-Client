@@ -14,7 +14,6 @@ import androidx.core.content.ContextCompat
 import com.sensoguard.ccsmobileclient.R
 import com.sensoguard.ccsmobileclient.classes.CryptoHandler
 import com.sensoguard.ccsmobileclient.global.*
-import kotlinx.android.synthetic.main.activity_activation.*
 
 class InitAppActivity : ParentActivity() {
 
@@ -41,7 +40,7 @@ class InitAppActivity : ParentActivity() {
     private fun configureActivation(){
 
         myImei=getDeviceIMEI()
-        tvImei?.text = myImei
+        //tvImei?.text = myImei
 
         val localActivateCode= getStringInPreference(this, ACTIVATION_CODE_KEY, NO_DATA)
         if(!localActivateCode.equals(NO_DATA)){
@@ -99,6 +98,7 @@ class InitAppActivity : ParentActivity() {
         permissions: Array<String>,
         grantResults: IntArray
     ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             PERMISSIONS_REQUEST_READ_PHONE_STATE -> {
                 // If request is cancelled, the result arrays are empty.

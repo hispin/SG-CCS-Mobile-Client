@@ -52,7 +52,6 @@ import com.sensoguard.ccsmobileclient.interfaces.OnFragmentListener
 import com.sensoguard.ccsmobileclient.services.ServiceFindLocation
 import com.sensoguard.ccsmobileclient.services.ServiceFindSingleLocation
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -261,59 +260,59 @@ class MapSensorsFragment : ParentFragment(), OnMapReadyCallback, OnAdapterListen
         }
     }
 
-    override fun onMapReady(googleMap: GoogleMap?) {
-        mMap = googleMap
-
-        mMap?.clear()
-
-        //set satellite as default
-        mMap?.mapType = mapType
-
-        //set the location of the current touching map
-        mMap?.setOnMapLongClickListener { arg0 ->
-            //bug fixed: crash when accept alarm
-            if (arg0 != null) {
-                currentLongitude = arg0.longitude
-                currentLatitude = arg0.latitude
-                showDialogSensorsList()
-            } else {
-                Toast.makeText(activity, "error in location1", Toast.LENGTH_LONG).show()
-            }
-        }
-
-        mMap?.setOnCameraMoveListener {
-            val cp = mMap?.cameraPosition
-            mCenterLatLong = cp?.target
-
-            //remove the action of set current location as current central location
-            //mCenterLatLong?.let { setMyLocate(it) }
-        }
-
-        //go to last location
-        val location = initFindLocation()
-
-        if (location == null) {
-            val latitude = getStringInPreference(activity, CURRENT_LATITUDE_PREF, "-1")
-            val longtude = getStringInPreference(activity, CURRENT_LONGTUDE_PREF, "-1")
-
-            if (!latitude.equals("-1") && !longtude.equals("-1")) {
-                try {
-                    val lat = latitude?.toDouble()
-                    val lon = longtude?.toDouble()
-
-                } catch (ex: NumberFormatException) {
-                }
-            }
-        }
-
-        //set last location if exist
-        location?.let { myLocate = LatLng(it.latitude, it.longitude) }
-
-        showLocation(location)
-
-        //Log.d("ServiceFindLocation","map start location")
-        gotoMyLocation()
-    }
+//    override fun onMapReady(googleMap: GoogleMap?) {
+//        mMap = googleMap
+//
+//        mMap?.clear()
+//
+//        //set satellite as default
+//        mMap?.mapType = mapType
+//
+//        //set the location of the current touching map
+//        mMap?.setOnMapLongClickListener { arg0 ->
+//            //bug fixed: crash when accept alarm
+//            if (arg0 != null) {
+//                currentLongitude = arg0.longitude
+//                currentLatitude = arg0.latitude
+//                showDialogSensorsList()
+//            } else {
+//                Toast.makeText(activity, "error in location1", Toast.LENGTH_LONG).show()
+//            }
+//        }
+//
+//        mMap?.setOnCameraMoveListener {
+//            val cp = mMap?.cameraPosition
+//            mCenterLatLong = cp?.target
+//
+//            //remove the action of set current location as current central location
+//            //mCenterLatLong?.let { setMyLocate(it) }
+//        }
+//
+//        //go to last location
+//        val location = initFindLocation()
+//
+//        if (location == null) {
+//            val latitude = getStringInPreference(activity, CURRENT_LATITUDE_PREF, "-1")
+//            val longtude = getStringInPreference(activity, CURRENT_LONGTUDE_PREF, "-1")
+//
+//            if (!latitude.equals("-1") && !longtude.equals("-1")) {
+//                try {
+//                    val lat = latitude?.toDouble()
+//                    val lon = longtude?.toDouble()
+//
+//                } catch (ex: NumberFormatException) {
+//                }
+//            }
+//        }
+//
+//        //set last location if exist
+//        location?.let { myLocate = LatLng(it.latitude, it.longitude) }
+//
+//        showLocation(location)
+//
+//        //Log.d("ServiceFindLocation","map start location")
+//        gotoMyLocation()
+//    }
 
 
     // move the camera to ic_mark location
@@ -362,7 +361,7 @@ class MapSensorsFragment : ParentFragment(), OnMapReadyCallback, OnAdapterListen
         }
         //add marker at the focus of the map
         myLocate?.let{
-            mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(myLocate, 15.0f))
+            mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(it, 15.0f))
             showMarkers()
             //fillSensorsMarkers()
         }
@@ -588,20 +587,22 @@ class MapSensorsFragment : ParentFragment(), OnMapReadyCallback, OnAdapterListen
 
         myLocatioMarker?.remove()
 
-        myLocatioMarker = mMap?.addMarker(
-            myLocate?.let {
-                MarkerOptions()
-                    .position(it)
-                    .draggable(true)
-                    .icon(context?.let { con ->
-                        convertBitmapToBitmapDiscriptor(
-                            con,
-                            R.drawable.ic_my_locate
-                        )
-                    })
-            }
-        )
-   }
+        myLocatioMarker = myLocate?.let {
+            MarkerOptions()
+                .position(it)
+                .draggable(true)
+                .icon(context?.let { con ->
+                    convertBitmapToBitmapDiscriptor(
+                        con,
+                        R.drawable.ic_my_locate
+                    )
+                })
+        }?.let {
+            mMap?.addMarker(
+                it
+            )
+        }
+    }
 
     //show marker of sensor
     private fun showSensorMarker(sensorItem: Sensor) {
@@ -914,7 +915,7 @@ class MapSensorsFragment : ParentFragment(), OnMapReadyCallback, OnAdapterListen
 
        if (editText.text.isNullOrBlank()) {
            editText.error =
-               resources.getString(com.sensoguard.ccsmobileclient.R.string.empty_field_error)
+               resources.getString(R.string.empty_field_error)
            isValid = false
        }
 
@@ -1072,6 +1073,60 @@ class MapSensorsFragment : ParentFragment(), OnMapReadyCallback, OnAdapterListen
         }
         detectorsArr?.let { activity?.let { context -> storeSensorsToLocally(it, context) } }
         showDialogSensorsList()
+    }
+
+    override fun onMapReady(googleMap: GoogleMap) {
+        mMap = googleMap
+
+        mMap?.clear()
+
+        //set satellite as default
+        mMap?.mapType = mapType
+
+        //set the location of the current touching map
+        mMap?.setOnMapLongClickListener { arg0 ->
+            //bug fixed: crash when accept alarm
+            if (arg0 != null) {
+                currentLongitude = arg0.longitude
+                currentLatitude = arg0.latitude
+                showDialogSensorsList()
+            } else {
+                Toast.makeText(activity, "error in location1", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        mMap?.setOnCameraMoveListener {
+            val cp = mMap?.cameraPosition
+            mCenterLatLong = cp?.target
+
+            //remove the action of set current location as current central location
+            //mCenterLatLong?.let { setMyLocate(it) }
+        }
+
+        //go to last location
+        val location = initFindLocation()
+
+        if (location == null) {
+            val latitude = getStringInPreference(activity, CURRENT_LATITUDE_PREF, "-1")
+            val longtude = getStringInPreference(activity, CURRENT_LONGTUDE_PREF, "-1")
+
+            if (!latitude.equals("-1") && !longtude.equals("-1")) {
+                try {
+                    val lat = latitude?.toDouble()
+                    val lon = longtude?.toDouble()
+
+                } catch (ex: NumberFormatException) {
+                }
+            }
+        }
+
+        //set last location if exist
+        location?.let { myLocate = LatLng(it.latitude, it.longitude) }
+
+        showLocation(location)
+
+        //Log.d("ServiceFindLocation","map start location")
+        gotoMyLocation()
     }
 
 //    private fun setUpMap() {
