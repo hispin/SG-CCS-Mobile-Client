@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Environment
+import android.os.storage.StorageManager
 import androidx.core.content.FileProvider
 import com.opencsv.CSVWriter
 import com.sensoguard.ccsmobileclient.R
@@ -68,16 +69,32 @@ private fun alarmToCsvString(alarm: Alarm?, context: Context): String {
     return sb.toString()
 }
 
-fun writeCsvFile(mCsvAlarms: ArrayList<String>): Boolean {
+fun writeCsvFile(mCsvAlarms: ArrayList<String>, context: Context): Boolean {
     try {
+
+        var file1: File? = null
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val storageManager = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
+            file1 = storageManager.primaryStorageVolume.directory!!
+        } else {
+            file1 = Environment.getExternalStorageDirectory()
+        }
         //create a folder
-        val folder = File(Environment.getExternalStorageDirectory(), mfolderName)
+        val folder = File(file1, mfolderName)
         if (!folder.exists()) {
             folder.mkdirs()
         }
 
         //write to file
-        val baseDir = android.os.Environment.getExternalStorageDirectory().absolutePath
+        var baseDir = ""
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val storageManager = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
+            baseDir = storageManager.primaryStorageVolume.directory!!.absolutePath
+        } else {
+            baseDir = Environment.getExternalStorageDirectory().absolutePath
+        }
+
         val filePath = baseDir + "/" + mfolderName + "" + File.separator + mfileName
         //val filePath=baseDir + File.separator + mfileName
 
@@ -148,7 +165,15 @@ fun writeCsvFile(mCsvAlarms: ArrayList<String>): Boolean {
 //Share the csv file
 fun shareCsv(activity: Activity) {
 
-    val baseDir = android.os.Environment.getExternalStorageDirectory().absolutePath
+    var baseDir = ""
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        val storageManager = activity.getSystemService(Context.STORAGE_SERVICE) as StorageManager
+        baseDir = storageManager.primaryStorageVolume.directory!!.absolutePath
+    } else {
+        baseDir = Environment.getExternalStorageDirectory().absolutePath
+    }
+
     val filePath = baseDir + "/" + mfolderName + "" + File.separator + mfileName
     val file = File(filePath)
     val sendIntent = Intent(Intent.ACTION_SEND)

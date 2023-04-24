@@ -22,7 +22,6 @@ import com.sensoguard.ccsmobileclient.classes.Alarm
 import com.sensoguard.ccsmobileclient.classes.Sensor
 import com.sensoguard.ccsmobileclient.global.*
 import com.sensoguard.ccsmobileclient.interfaces.OnAdapterListener
-import java.util.*
 
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
@@ -95,14 +94,14 @@ class AlarmsLogFragment : ParentFragment(), OnAdapterListener {
             this.context?.let { it1 ->
 
                 val alarmsStr = alarmsListToCsvFile(alarms, it1)
-                if (writeCsvFile(alarmsStr)) {
-                    activity?.let { it2 -> shareCsv(it2) }
-                    //Toast.makeText(context,"success",Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(context, "failed", Toast.LENGTH_SHORT).show()
+                if (activity != null) {
+                    if (writeCsvFile(alarmsStr, requireActivity())) {
+                        activity?.let { it2 -> shareCsv(it2) }
+                        //Toast.makeText(context,"success",Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "failed", Toast.LENGTH_SHORT).show()
+                    }
                 }
-
-
             }
 
         }

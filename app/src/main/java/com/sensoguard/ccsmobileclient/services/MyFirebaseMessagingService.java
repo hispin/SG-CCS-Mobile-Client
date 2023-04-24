@@ -1,5 +1,18 @@
 package com.sensoguard.ccsmobileclient.services;
 
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_TYPE_INDEX_KEY;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.CREATE_ALARM_ID_KEY;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.CREATE_ALARM_IS_ARMED;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.CREATE_ALARM_KEY;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.CREATE_ALARM_NAME_KEY;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.CREATE_ALARM_TYPE_KEY;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.LAST_LATITUDE;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.LAST_LONGETITUDE;
+import static com.sensoguard.ccsmobileclient.global.SysAlarmsManagerKt.addAlarmToQueue;
+import static com.sensoguard.ccsmobileclient.global.SysAlarmsManagerKt.populateAlarmsFromLocally;
+import static com.sensoguard.ccsmobileclient.global.SysAlarmsManagerKt.storeAlarmsToLocally;
+import static com.sensoguard.ccsmobileclient.global.SysMethodsSharedPrefKt.setDoubleInPreference;
+
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -19,6 +32,8 @@ import com.sensoguard.ccsmobileclient.activities.MainActivity;
 import com.sensoguard.ccsmobileclient.classes.Alarm;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -27,19 +42,6 @@ import java.util.Locale;
 import java.util.Objects;
 
 import timber.log.Timber;
-
-import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_TYPE_INDEX_KEY;
-import static com.sensoguard.ccsmobileclient.global.ConstsKt.CREATE_ALARM_ID_KEY;
-import static com.sensoguard.ccsmobileclient.global.ConstsKt.CREATE_ALARM_IS_ARMED;
-import static com.sensoguard.ccsmobileclient.global.ConstsKt.CREATE_ALARM_KEY;
-import static com.sensoguard.ccsmobileclient.global.ConstsKt.CREATE_ALARM_NAME_KEY;
-import static com.sensoguard.ccsmobileclient.global.ConstsKt.CREATE_ALARM_TYPE_KEY;
-import static com.sensoguard.ccsmobileclient.global.ConstsKt.LAST_LATITUDE;
-import static com.sensoguard.ccsmobileclient.global.ConstsKt.LAST_LONGETITUDE;
-import static com.sensoguard.ccsmobileclient.global.SysAlarmsManagerKt.addAlarmToQueue;
-import static com.sensoguard.ccsmobileclient.global.SysAlarmsManagerKt.populateAlarmsFromLocally;
-import static com.sensoguard.ccsmobileclient.global.SysAlarmsManagerKt.storeAlarmsToLocally;
-import static com.sensoguard.ccsmobileclient.global.SysMethodsSharedPrefKt.setDoubleInPreference;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
     public static final String NOTIFICATION_CHANNEL_ID = "nh-demo-channel-id";
@@ -105,40 +107,57 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         if (imagePath != null)
             Timber.d(imagePath);
 
+        if (isJsonValid(message)) {
+            try {
+                JSONObject jObject = new JSONObject(message);
+                double lat = jObject.getDouble("Latitude");
+                double lon = jObject.getDouble("Longitude");
+                String alarmId = jObject.getString("AlarmID");
+                String typeAlarm = jObject.getString("AlarmType");
+                //save the index of type for other languages then english
+                int typeIdx = 0;
+                if (typeAlarm.equals("Car"))
+                    typeIdx = 0;
+                else if (typeAlarm.equals("Footsteps"))
+                    typeIdx = 1;
+                sendingManage(alarmId, lat, lon, typeAlarm, true, typeIdx);
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            if (message != null) {
+                String[] arr = message.split(" ");
+                if (arr.length > 2) {
+                    String coordinates = arr[1];
+                    String[] tmp = coordinates.split(",");
+                    if (tmp.length > 1) {
+                        String latitude = tmp[0];
+                        String longtitude = tmp[1];
+                        try {
+                            double lat = Double.parseDouble(latitude);
+                            double lon = Double.parseDouble(longtitude);
+                            Timber.d("lat=" + lat + " lon=" + lon);
 
-        if (message != null) {
-            String[] arr = message.split(" ");
-            if (arr.length > 2) {
-                String coordinates = arr[1];
-                String[] tmp = coordinates.split(",");
-                if (tmp.length > 1) {
-                    String latitude = tmp[0];
-                    String longtitude = tmp[1];
-                    try {
-                        double lat = Double.parseDouble(latitude);
-                        double lon = Double.parseDouble(longtitude);
-                        Timber.d("lat=" + lat + " lon=" + lon);
+                            //save locally for default location
+                            setDoubleInPreference(ctx, LAST_LATITUDE, lat);
+                            setDoubleInPreference(ctx, LAST_LONGETITUDE, lon);
 
-                        //save locally for default location
-                        setDoubleInPreference(ctx, LAST_LATITUDE, lat);
-                        setDoubleInPreference(ctx, LAST_LONGETITUDE, lon);
+                            String alarmId = arr[0];
 
-                        String alarmId = arr[0];
+                            //remove Parenthesis
+                            String typeAlarm = arr[2].replace("(",
+                                    "");
+                            typeAlarm = typeAlarm.replace(")",
+                                    "");
 
-                        //remove Parenthesis
-                        String typeAlarm = arr[2].replace("(",
-                                "");
-                        typeAlarm = typeAlarm.replace(")",
-                                "");
+                            //save the index of type for other languages then english
+                            int typeIdx = 0;
+                            if (typeAlarm.equals("Car"))
+                                typeIdx = 0;
+                            else if (typeAlarm.equals("Footsteps"))
+                                typeIdx = 1;
 
-                        //save the index of type for other languages then english
-                        int typeIdx = 0;
-                        if (typeAlarm.equals("Car"))
-                            typeIdx = 0;
-                        else if (typeAlarm.equals("Intruder"))
-                            typeIdx = 1;
-
-                        sendingManage(alarmId, lat, lon, typeAlarm, true, typeIdx);
+                            sendingManage(alarmId, lat, lon, typeAlarm, true, typeIdx);
 //                        addAlarmToQueue(alarmId,lat,lon,typeAlarm,true,typeIdx);
 //
 //                        //add alarm to history
@@ -147,12 +166,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 //                        sendAlarm(alarmId,typeAlarm,lat,lon);
 
 
-                    } catch (NumberFormatException ex) {
-                        ex.printStackTrace();
+                        } catch (NumberFormatException ex) {
+                            ex.printStackTrace();
+                        }
                     }
                 }
-            }
 
+            }
         }
 
 
@@ -167,6 +187,22 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 //
 //        }
     }
+
+    /**
+     * check if the string is format of json
+     *
+     * @param json
+     * @return
+     */
+    public boolean isJsonValid(String json) {
+        try {
+            new JSONObject(json);
+        } catch (JSONException e) {
+            return false;
+        }
+        return true;
+    }
+
 
     /**
      * @param alarmId
@@ -268,9 +304,18 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         long oneTimeID = SystemClock.uptimeMillis();
 
-        //set different request code to make different extra for each notification
-        PendingIntent contentIntent = PendingIntent.getActivity(ctx, (int) oneTimeID,
-                intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent contentIntent;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            //set different request code to make different extra for each notification
+            contentIntent = PendingIntent.getActivity(ctx, (int) oneTimeID,
+                    intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+        } else {
+            //set different request code to make different extra for each notification
+            contentIntent = PendingIntent.getActivity(ctx, (int) oneTimeID,
+                    intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        }
+
 
         //Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(

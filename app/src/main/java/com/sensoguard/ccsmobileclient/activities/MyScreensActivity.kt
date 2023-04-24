@@ -492,6 +492,21 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
      * device. The result of the permission request is handled by a callback,
      * onRequestPermissionsResult.
      */
+
+        val PERMISSIONS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arrayOf(
+                Manifest.permission.READ_MEDIA_IMAGES,
+                Manifest.permission.READ_MEDIA_VIDEO,
+                Manifest.permission.READ_MEDIA_AUDIO
+            )
+        } else {
+            arrayOf(
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.CAMERA
+            )
+        }
+
         if (ContextCompat.checkSelfPermission(
                 this.applicationContext,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -501,7 +516,7 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
         } else {
             ActivityCompat.requestPermissions(
                 this,
-                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                PERMISSIONS,
                 PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE
             )
         }
