@@ -6,7 +6,9 @@ class Alarm(
     var type: String?,
     var currentDate: String,
     var isArmed: Boolean?,
-    var timeInMillis: Long?
+    var timeInMillis: Long?,
+    var zone: String,
+    var isNewSystem: Boolean
 ){
     var longitude: Double?=null
     var latitude: Double?=null

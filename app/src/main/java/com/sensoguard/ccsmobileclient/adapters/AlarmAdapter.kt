@@ -11,7 +11,6 @@ import com.sensoguard.ccsmobileclient.R
 import com.sensoguard.ccsmobileclient.classes.Alarm
 import com.sensoguard.ccsmobileclient.global.getStrDateTimeByMilliSeconds
 import com.sensoguard.ccsmobileclient.interfaces.OnAdapterListener
-import java.util.*
 
 class AlarmAdapter (private var alarms: ArrayList<Alarm>, val context: Context, val onAdapterListener: OnAdapterListener, var itemClick: (Alarm) -> Unit) : RecyclerView.Adapter<AlarmAdapter.ViewHolder>() {
 
@@ -41,10 +40,11 @@ class AlarmAdapter (private var alarms: ArrayList<Alarm>, val context: Context, 
 
     inner class ViewHolder(private val _itemView: View, private val itemClick: (Alarm) -> Unit) :
         RecyclerView.ViewHolder(_itemView) {
-        private var tvId:TextView? = null
-        private var tvName:TextView?=null
-        private var tvDate:TextView? = null
-        private var tvTime:TextView? = null
+        private var tvHub: TextView? = null
+        private var tvZone: TextView? = null
+        private var tvDate: TextView? = null
+        private var tvTime: TextView? = null
+
         //TODO press twice
         private var tvType: TextView? = null
 
@@ -57,8 +57,8 @@ class AlarmAdapter (private var alarms: ArrayList<Alarm>, val context: Context, 
 
 
         fun bindReservation(alarm: Alarm) {
-            tvId = _itemView.findViewById(R.id.tvId)
-            tvName = _itemView.findViewById(R.id.tvName)
+            tvHub = _itemView.findViewById(R.id.tvId)
+            tvZone = _itemView.findViewById(R.id.tvName)
             tvDate = _itemView.findViewById(R.id.tvDate)
             tvType = _itemView.findViewById(R.id.tvType)
             tvTime = _itemView.findViewById(R.id.tvTime)
@@ -69,15 +69,15 @@ class AlarmAdapter (private var alarms: ArrayList<Alarm>, val context: Context, 
                 && alarm.isLocallyDefined != null
                 && alarm.isLocallyDefined
             ) {
-                tvName?.setTextColor(ContextCompat.getColor(context, R.color.red))
+                tvZone?.setTextColor(ContextCompat.getColor(context, R.color.red))
                 tvDate?.setTextColor(ContextCompat.getColor(context, R.color.red))
-                tvId?.setTextColor(ContextCompat.getColor(context, R.color.red))
+                tvHub?.setTextColor(ContextCompat.getColor(context, R.color.red))
                 tvType?.setTextColor(ContextCompat.getColor(context, R.color.red))
                 tvTime?.setTextColor(ContextCompat.getColor(context, R.color.red))
             } else {
-                tvName?.setTextColor(ContextCompat.getColor(context, R.color.black))
+                tvZone?.setTextColor(ContextCompat.getColor(context, R.color.black))
                 tvDate?.setTextColor(ContextCompat.getColor(context, R.color.black))
-                tvId?.setTextColor(ContextCompat.getColor(context, R.color.black))
+                tvHub?.setTextColor(ContextCompat.getColor(context, R.color.black))
                 tvType?.setTextColor(ContextCompat.getColor(context, R.color.black))
                 tvTime?.setTextColor(ContextCompat.getColor(context, R.color.black))
             }
@@ -88,17 +88,18 @@ class AlarmAdapter (private var alarms: ArrayList<Alarm>, val context: Context, 
             tvTime?.text =
                 alarm.timeInMillis?.let { getStrDateTimeByMilliSeconds(it, "kk:mm:ss", context) }
 
-            var tmp = alarm.id?.split("-")
-            if (tmp != null && tmp.size > 1) {
-                tvId?.text = tmp[0]
-                tvName?.text = tmp[1]
+            // if it is a new system set it simply
+            if (alarm.isNewSystem) {
+                tvHub?.text = alarm.id
+                tvZone?.text = alarm.zone
+            } else {
+                val tmp = alarm.id?.split("-")
+                if (tmp != null && tmp.size > 1) {
+                    tvHub?.text = tmp[0]
+                    tvZone?.text = tmp[1]
+                }
             }
-            //tvId?.text = alarm.id
-
             tvType?.text = alarm.type
-            //tvName?.text = alarm.name
-
-
         }
     }
 }

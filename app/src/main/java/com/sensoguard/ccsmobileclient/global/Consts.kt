@@ -3,7 +3,7 @@ package com.sensoguard.ccsmobileclient.global
 const val CHECK_AVAILABLE_KEY = "find.drivers.command"
 const val STOP_READ_DATA_KEY = "stop.data.command"
 const val DISCONNECT_USB_PROCESS_KEY = "disconnect.usb.process"
-
+const val TEST_EVENT_MSG_KEY = "testEventMsgKey"
 const val HANDLE_READ_DATA_EXCEPTION = "handle.read.data.exception"
 const val ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION"
 const val ACTION_TOGGLE_TEST_MODE = "toggleTestMode"
@@ -63,6 +63,7 @@ const val ALARM_LIST_KEY_PREF = "AlarmsList"
 const val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 0
 const val PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1
 const val PERMISSIONS_REQUEST_READ_PHONE_STATE = 2
+const val PERMISSIONS_REQUEST_NOTIFICATION = 3
 
 const val CURRENT_LOCATION = "currentLocation"
 

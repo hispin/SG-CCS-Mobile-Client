@@ -15,4 +15,5 @@ class AlarmSensor(
     var typeIdx: Int? = null
     var longitude: Double? = null
     var latitude: Double? = null
+    var isSound = true
 }

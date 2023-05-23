@@ -12,6 +12,7 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -55,6 +56,7 @@ public class RegistrationIntentService extends IntentService {
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful() && task.getResult() != null) {
                             FCM_token = task.getResult();
+                            Log.d("testAlarmMap", "FCM_token " + FCM_token);
                             Intent inn = new Intent("get.token.notification");
                             inn.putExtra("token", FCM_token);
                             sendBroadcast(inn);

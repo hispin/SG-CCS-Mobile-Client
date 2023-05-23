@@ -1,5 +1,6 @@
 package com.sensoguard.ccsmobileclient.activities
 
+//import com.sensoguard.ccsmobileclient.services.ServiceConnectSensor
 import android.Manifest
 import android.app.AlertDialog
 import android.content.BroadcastReceiver
@@ -17,7 +18,6 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
-import android.widget.ToggleButton
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -37,34 +37,20 @@ import com.sensoguard.ccsmobileclient.fragments.ConfigurationFragment
 import com.sensoguard.ccsmobileclient.fragments.MapmobFragment
 import com.sensoguard.ccsmobileclient.global.*
 import com.sensoguard.ccsmobileclient.interfaces.OnFragmentListener
-import com.sensoguard.ccsmobileclient.services.ServiceConnectSensor
+import com.sensoguard.ccsmobileclient.services.MediaService
 import java.util.*
 
 
 class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
 
 
-    //private var clickHundler: ClickHandler? = null
-
-    // When requested, this adapter returns a DemoObjectFragment,
-    // representing an object in the collection.
     private lateinit var collectionPagerAdapter: CollectionPagerAdapter
     private lateinit var viewPager: ViewPager
     private var currentItemTopMenu = 0
-    private var togChangeStatus: ToggleButton? = null
     private var consMyActionBar: ConstraintLayout? = null
 
 
     val TAG = "MyScreensActivity"
-
-
-    //bug fixed: when press home button and return to app, the usb process does not restart properly,
-    //therefore we disconnect the service and restart it when the app loaded
-//    override fun onUserLeaveHint() {
-//        super.onUserLeaveHint()
-//        Log.d(TAG, "home")
-//        //stopUsbReadConnection()
-//    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,15 +82,29 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
             .startCurrentCalendarListener()?.observe(this, androidx.lifecycle.Observer { calendar ->
 
                 //if there is no alarm in process then shut down the timer
-                if (UserSession.instance.alarmSensors == null || UserSession.instance.alarmSensors?.isEmpty()!!) {
+                if (UserSession.instance.alarmSensors == null
+                    || UserSession.instance.alarmSensors?.isEmpty()!!
+                    || isAllSensorAlarmTimeOutSound()
+                ) {
                     ViewModelProviders.of(this).get(ViewModelListener::class.java).shutDownTimer()
                     sendBroadcast(Intent(STOP_ALARM_SOUND))
-                    //stopPlayingAlarm()
                 }
 
             })
+    }
 
-        //}
+    /**
+     * check if all the alarms are timeout for sound only
+     */
+    private fun isAllSensorAlarmTimeOutSound(): Boolean {
+        val iteratorList = UserSession.instance.alarmSensors?.listIterator()
+        while (iteratorList != null && iteratorList.hasNext()) {
+            val sensorItem = iteratorList.next()
+            if (sensorItem.isSound) {
+                return false
+            }
+        }
+        return true
     }
 
     override fun onResume() {
@@ -113,20 +113,8 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
             startTimer()
         }
         configureActionBar()
-        //editActionBar(false)
-        //startTimerGeneralService()
     }
 
-//    //start timer to supervise the usb software connection
-//    private fun startTimerGeneralService() {
-//        val intent = Intent(this, TimerGeneralService::class.java)
-//
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            startForegroundService(intent)
-//        } else {
-//            startService(intent)
-//        }
-//    }
 
     //create timeout for reset sensor to regular icon and cancel the alarm icon
     private fun startTimer() {
@@ -198,21 +186,20 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
 
     private val usbReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, arg1: Intent) {
+            Log.d("testAlarmMap", "MyScreenActivity:arg1.action" + arg1.action)
             when {
                 arg1.action == USB_DEVICES_EMPTY -> {
-                    //setBooleanInPreference(this@MyScreensActivity, USB_DEVICE_CONNECT_STATUS, false)
                     setUIusbConnection(false)
 
                 }
                 arg1.action == USB_DEVICES_NOT_EMPTY -> {
                     val isConnected =
                         getBooleanInPreference(context, USB_DEVICE_CONNECT_STATUS, false)
-                    //setBooleanInPreference(this@MyScreensActivity, USB_DEVICE_CONNECT_STATUS, true)
                     if (isConnected) {
                         setUIusbConnection(true)
                     } else {
                         //if there is device and the status is wrong then restart the connection
-                        startConnectionService()
+                        //startConnectionService()
                     }
 
                 }
@@ -221,12 +208,12 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
                 }
                 //when disconnect the device from USB
                 arg1.action == UsbManager.ACTION_USB_DEVICE_DETACHED -> {
-                    //Toast.makeText(this@MyScreensActivity, "detach", Toast.LENGTH_SHORT).show()
                     showUsbReadDisconnection()
                     playVibrate()
                     showDisconnectUsbDialog()
                 }
                 arg1.action == CREATE_ALARM_KEY -> {
+                    Log.d("testAlarmMap", "MyScreenActivity:startTimer")
                     startTimer()
                 }
                 arg1.action == STOP_ALARM_SOUND -> {
@@ -241,7 +228,6 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
                 arg1.action == TOKEN_REGISTRATION_STATUS_KEY -> {
                     //if the token registration status
                     val isConnected = getBooleanInPreference(context, REGISTER_TOKEN_STATUS, false)
-                    togChangeStatus?.isChecked = isConnected
                 }
 
 
@@ -293,9 +279,7 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
 
     //show usb read disconnection
     private fun showUsbReadDisconnection() {
-        //setBooleanInPreference(this@MyScreensActivity, USB_DEVICE_CONNECT_STATUS, false)
         //bug fixed : kill also the service
-        //sendBroadcast(Intent(DISCONNECT_USB_PROCESS_KEY))
         setUIusbConnection(false)
     }
 
@@ -318,18 +302,11 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
 
         configureActionBar()
 
-//        //start listener to alarm
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            startForegroundService(Intent(this, ServiceHandleAlarms::class.java))
-//        } else {
-//            startService(Intent(this, ServiceHandleAlarms::class.java))
-//        }
         configTabs()
 
     }
 
     private fun setUIusbConnection(state: Boolean) {
-        togChangeStatus?.isChecked = state
     }
 
     //TODO : the toggle will updated by the status changing
@@ -339,53 +316,26 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
             findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)//supportActionBar
         setSupportActionBar(toolbar)
 
-        togChangeStatus = findViewById(
-            R.id.togChangeStatus
-        )
 
         consMyActionBar = findViewById(
             R.id.consMyActionBar
         )
-        //Bugs fixed: disable alarm test
-//        consMyActionBar?.setOnClickListener {
-//            if (clickHundler == null) {
-//                clickHundler = ClickHandler()
-//                Thread(clickHundler).start()
-//            } else {
-//                clickHundler?.recordNewClick()
-//            }
-//        }
 
         //if the token registration status
         val isConnected = getBooleanInPreference(this, REGISTER_TOKEN_STATUS, false)
-        togChangeStatus?.isChecked = isConnected
-
-        //Toast.makeText(this,"isConnected1="+isConnected, Toast.LENGTH_SHORT).show()
-
-//        togChangeStatus?.setOnCheckedChangeListener { buttonView, isChecked ->
-//            if (isChecked) {
-//                startConnectionService()
-//            } else {
-//                setBooleanInPreference(this, USB_DEVICE_CONNECT_STATUS, false)
-//                sendBroadcast(Intent(STOP_READ_DATA_KEY))
-//                //sendBroadcast(Intent(DISCONNECT_USB_PROCESS_KEY))
-//                sendBroadcast(Intent(STOP_ALARM_SOUND))
-//            }
-//        }
     }
 
     //start connection service
-    private fun startConnectionService() {
-
-        val connector = Intent(this, ServiceConnectSensor::class.java)
-        //stopService(connector)
-        //Toast.makeText(this,"isConnected2="+isConnected, Toast.LENGTH_SHORT).show()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(connector)
-        } else {
-            startService(Intent(connector))
-        }
-    }
+//    private fun startConnectionService() {
+//
+//        val connector = Intent(this, ServiceConnectSensor::class.java)
+//        //Toast.makeText(this,"isConnected2="+isConnected, Toast.LENGTH_SHORT).show()
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            startForegroundService(connector)
+//        } else {
+//            startService(Intent(connector))
+//        }
+//    }
 
 
     private fun configTabs() {
@@ -408,10 +358,6 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
 
         //relate the tab layout to viewpager because we need to add the icons
         tabs.setupWithViewPager(viewPager)
-//        tabs.getTabAt(0)?.icon = ContextCompat.getDrawable(
-//            this@MyScreensActivity,
-//            R.drawable.selected_sensor_tab
-//        )
         tabs.getTabAt(0)?.icon = ContextCompat.getDrawable(
             this@MyScreensActivity,
             R.drawable.selected_map_tab
@@ -431,6 +377,8 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
     override fun onStart() {
         super.onStart()
         setFilter()
+        val serviceIntent = Intent(this, MediaService::class.java)
+        stopService(serviceIntent)
     }
 
 
@@ -524,7 +472,7 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
 
 
     // Since this is an object collection, use a FragmentStatePagerAdapter,
-// and NOT a FragmentPagerAdapter.
+    // and NOT a FragmentPagerAdapter.
     inner class CollectionPagerAdapter(fm: FragmentManager) : FragmentStatePagerAdapter(
         fm,
         BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT
@@ -537,13 +485,6 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
             var fragment: Fragment? = null
             //set event of click ic_on top menu
             when (position) {
-//                0 -> {
-//                    fragment = SensorsFragment()
-//                    fragment.arguments = Bundle().apply {
-//                        // Our object is just an integer :-P
-//                        putInt("ARG_OBJECT", position + 1)
-//                    }
-//                }
                 0 -> {
                     fragment = MapmobFragment()//MapSensorsFragment()//MapmobFragment()
                     fragment.arguments = Bundle().apply {
@@ -613,59 +554,6 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
     override fun update(o: Observable?, arg: Any?) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
-
-//    inner class ClickHandler : Runnable {
-//
-//        private val WAIT_DELAY = 1000
-//
-//        private var count = 1
-//        private var lastSubmitTime = System.currentTimeMillis()
-//
-//        fun recordNewClick() {
-//            count++
-//            lastSubmitTime = System.currentTimeMillis()
-//        }
-//
-//        override fun run() {
-//            while (System.currentTimeMillis() - lastSubmitTime <= WAIT_DELAY) {
-//                // idle
-//                Thread.yield()
-//            }
-//            runOnUiThread {
-//                if (count >= 2) {
-//                    sendBroadcast(Intent(ACTION_TOGGLE_TEST_MODE))
-//                    count = 0
-//                    clickHundler = null
-//                }
-//                count = 0
-//                clickHundler = null
-//            }
-//
-//
-//        }
-//    }
-
-
-//    override fun onAttachedToWindow() {
-//        super.onAttachedToWindow()
-//        this.window.setType(WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG)
-//    }
-//    override fun onDestroy() {
-//        super.onDestroy()
-//        Log.d(TAG,"distroy")
-//        //stopUsbReadConnection()
-//    }
-
-//    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-//        super.onKeyDown(keyCode, event)
-//        if(keyCode == KeyEvent.KEYCODE_HOME)
-//        {
-//            Log.d("detectKey","home")
-//            //The Code Want to Perform.
-//
-//        }
-//        return true
-//    }
 }
 
 

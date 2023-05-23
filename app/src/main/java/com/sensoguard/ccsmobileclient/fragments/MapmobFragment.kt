@@ -1,7 +1,6 @@
 package com.sensoguard.ccsmobileclient.fragments
 
-import android.app.Activity
-import android.app.Dialog
+import android.app.*
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -13,11 +12,14 @@ import android.location.Location
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
@@ -47,12 +49,16 @@ import com.mapbox.mapboxsdk.style.layers.PropertyFactory.*
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.sensoguard.ccsmobileclient.R
+import com.sensoguard.ccsmobileclient.activities.MainActivity
+import com.sensoguard.ccsmobileclient.activities.MyScreensActivity
 import com.sensoguard.ccsmobileclient.adapters.SensorsDialogAdapter
 import com.sensoguard.ccsmobileclient.classes.AlarmSensor
 import com.sensoguard.ccsmobileclient.classes.Sensor
 import com.sensoguard.ccsmobileclient.controler.ViewModelListener
 import com.sensoguard.ccsmobileclient.global.*
 import com.sensoguard.ccsmobileclient.interfaces.OnAdapterListener
+import com.sensoguard.ccsmobileclient.services.MediaService
+import com.sensoguard.ccsmobileclient.services.MyFirebaseMessagingService
 import com.sensoguard.ccsmobileclient.services.ServiceFindLocation
 import com.sensoguard.ccsmobileclient.services.ServiceFindSingleLocation
 import java.util.*
@@ -62,6 +68,8 @@ import java.util.*
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
+const val CHANNEL_NAME = "newAlarmDetected"
+const val CHANNEL_ID = "1.0"
 
 /**
  * A simple [Fragment] subclass.
@@ -86,6 +94,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
 
     private var fbRefresh: FloatingActionButton? = null
     private var fbTest: FloatingActionButton? = null
+    private var fbClear: FloatingActionButton? = null
 
     //private var btnDownloadMaps:AppCompatButton?=null
 
@@ -116,6 +125,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
     private val PIR_ICON_ID = "PIR_ICON_ID"
     private val RADAR_ICON_ID = "RADAR_ICON_ID"
     private val VIBRATION_ICON_ID = "VIBRATION_ICON_ID"
+    private val ZOMM_LEVEL = 5.0
 
     private var locationManager: LocationManager? = null
 
@@ -136,27 +146,48 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                 .startCurrentCalendarListener()?.observe(
                     this,
                     { calendar ->
-
+                        Log.d("testAlarmMap", "startTimerListener in MapSensorsFragment")
                         //Log.d("testTimer","tick in MapSensorsFragment")
                         //if there is no alarm in process then shut down the timer
-                        if (UserSession.instance.alarmSensors == null || UserSession.instance.alarmSensors?.isEmpty()!!) {
+                        if (UserSession.instance.alarmSensors == null
+                            || UserSession.instance.alarmSensors?.isEmpty()!!
+                            || isAllSensorAlarmTimeOutSound()
+                        ) {
+
                             activity?.let { act ->
                                 ViewModelProviders.of(act).get(ViewModelListener::class.java)
                                     .shutDownTimer()
                             }
                             //showMarkers()
-                        }
-//                        else {
-//                            //remove all the time out sensors alarm and show them with regular sensor marker
-//                            //replaceSensorAlarmTimeOutToSensorMarker()
+                        } else {
+                            //set all the time out sensors alarm as sound off
+                            replaceSensorAlarmTimeOutToSensorMarker()
 //                            showMarkers()
-//                        }
+                        }
                         //if the
+                        Log.d(
+                            "testAlarmMap",
+                            "startTimerListener in MapSensorsFragment:showMarkers"
+                        )
                         showMarkers()
 
                     })
 
         }
+    }
+
+    /**
+     * check if all the alarms are timeout for sound only
+     */
+    private fun isAllSensorAlarmTimeOutSound(): Boolean {
+        val iteratorList = UserSession.instance.alarmSensors?.listIterator()
+        while (iteratorList != null && iteratorList.hasNext()) {
+            val sensorItem = iteratorList.next()
+            if (sensorItem.isSound) {
+                return false
+            }
+        }
+        return true
     }
 
     override fun onCreateView(
@@ -176,6 +207,11 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
             gotoMySingleLocation()
         }
 
+        fbClear = view.findViewById(R.id.fbClear)
+        fbClear?.setOnClickListener {
+            clearAlarms()
+        }
+
         fbTest = view.findViewById(R.id.fbTest1)
         fbTest?.setOnClickListener {
             showTestEventDialog()
@@ -185,6 +221,11 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
         initMapType()
 
         return view
+    }
+
+    private fun clearAlarms() {
+        UserSession.instance.alarmSensors = ArrayList()
+        showMarkers()
     }
 
     //get last location
@@ -237,7 +278,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
 
                 val cameraPosition = CameraPosition.Builder()
                     .target(LatLng(myLocate?.latitude!!, myLocate?.longitude!!))
-                    .zoom(15.0)
+                    .zoom(ZOMM_LEVEL)
                     .tilt(20.0)
                     .build()
 
@@ -277,18 +318,16 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                 if (sensorItem != null) {
 
                     //if time out then remove the sensor from alarm list
-                    if (isSensorAlarmTimeout(sensorItem)) {
-                        iteratorList.remove()
-                        //UserSession.instance.alarmSensors?.remove(sensorItem)
-                        //showSensorMarker(sensorItem)
-                    } else {
-                        //save the marker for update after timeout
-                        sensorItem.markerFeature = showSensorAlarmMarker(
-                            sensorItem,
-                            sensorItem.type,
-                            sensorItem.typeIdx
-                        )
-                    }
+//                    if (isSensorAlarmTimeout(sensorItem)) {
+//                        iteratorList.remove()
+//                    } else {
+                    //save the marker for update after timeout
+                    sensorItem.markerFeature = showSensorAlarmMarker(
+                        sensorItem,
+                        sensorItem.type,
+                        sensorItem.typeIdx
+                    )
+//                    }
 
                 } else {
                     //show sensor marker
@@ -296,70 +335,31 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                 }
             }
         }
-
-//        //get sensors from locally
-//        val sensorsArr = activity?.let { getSensorsFromLocally(it) }
-//
-//        //for
-//        val iteratorList = sensorsArr?.listIterator()
-//        while (iteratorList != null && iteratorList.hasNext()) {
-//            val sensorItem = iteratorList.next()
-//            if (sensorItem.getLatitude() != null
-//                && sensorItem.getLongtitude() != null
-//            ) {
-//
-//                val sensorAlarm = getSensorAlarmBySensor(sensorItem)
-//
-//                if (sensorAlarm != null) {
-//
-//                    //if time out then remove the sensor from alarm list
-//                    if (isSensorAlarmTimeout(sensorAlarm)) {
-//                        UserSession.instance.alarmSensors?.remove(sensorAlarm)
-//                        showSensorMarker(sensorItem)
-//                    } else {
-//                        //save the marker for update after timeout
-//                        sensorAlarm.markerFeature = showSensorAlarmMarker(
-//                            sensorItem,
-//                            sensorAlarm.type,
-//                            sensorAlarm.typeIdx
-//                        )
-//                    }
-//
-//                } else {
-//                    //show sensor marker
-//                    showSensorMarker(sensorItem)
-//                }
-//
-//            }
-//        }
     }
 
 
-    //Bug fixed :disable getting permanent current location
-    //get current location from gps
-//    private fun gotoMyLocation() {
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            activity?.startForegroundService(Intent(context, ServiceFindLocation::class.java))
-//        } else {
-//            activity?.startService(Intent(context, ServiceFindLocation::class.java))
-//        }
-//    }
+
 
     //get current location from gps
     private fun gotoMySingleLocation() {
+        //just when there is no alarms go to current location
+        if (UserSession.instance.alarmSensors == null
+            || UserSession.instance.alarmSensors?.isEmpty()!!
+        ) {
 
-        if (checkLastAlarm()) {
-            showLocationLastAlarm()
-        } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                activity?.startForegroundService(
-                    Intent(
-                        context,
-                        ServiceFindSingleLocation::class.java
-                    )
-                )
+            if (checkLastAlarm()) {
+                showLocationLastAlarm()
             } else {
-                activity?.startService(Intent(context, ServiceFindSingleLocation::class.java))
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    activity?.startForegroundService(
+                        Intent(
+                            context,
+                            ServiceFindSingleLocation::class.java
+                        )
+                    )
+                } else {
+                    activity?.startService(Intent(context, ServiceFindSingleLocation::class.java))
+                }
             }
         }
     }
@@ -411,42 +411,143 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
     //for test :enter manually alarm
     private fun showTestEventDialog() {
 
-        //create dialog
-        val dialog = MapDetectsFragment@ this.context?.let { Dialog(it) }
-        //set layout custom
-        dialog?.setContentView(R.layout.test_dialog)
+        startServiceMedia()
 
-        val etid = dialog?.findViewById<EditText>(R.id.etId)
-        val etType = dialog?.findViewById<EditText>(R.id.etType)
-        val btnOk = dialog?.findViewById<Button>(R.id.btnOk)
+        Log.d("testTest", "showTestEventDialog")
 
-        //Bug fixed:Fatal Exception: java.lang.NumberFormatException
-        //Invalid int: "1 "
-        btnOk?.setOnClickListener {
+        addAlarmToQueue("GSM_Dani-GSM_Unit1", 34.0, 34.0, "Footsteps", true, 0)
+
+        sendNotification("test")
+        //sendNotification()
+
+        //fun sendAlarm(alarmId: String, typeAlarm: String, lat: Double, lon: Double) {
+        val inn = Intent(CREATE_ALARM_KEY)
+        inn.putExtra(CREATE_ALARM_ID_KEY, "GSM_Dani-GSM_Unit1")
+        inn.putExtra(CREATE_ALARM_NAME_KEY, "GSM_Dani-GSM_Unit1")
+        inn.putExtra(CREATE_ALARM_IS_ARMED, true)
+        inn.putExtra(CREATE_ALARM_TYPE_KEY, "Footsteps")
+        inn.putExtra(ALARM_TYPE_INDEX_KEY, -1)
+        requireActivity().sendBroadcast(inn)
+    }
+
+    //start service media
+    private fun startServiceMedia() {
+        val serviceIntent = Intent(requireActivity(), MediaService::class.java)
+        ContextCompat.startForegroundService(requireActivity(), serviceIntent)
+    }
+
+    private var mNotificationManager: NotificationManager? = null
+
+    ///////////////////////////////
 
 
-            if (etid != null && validIsEmpty(etid)
-                && etType != null && validIsEmpty(etType)
-            ) {
-                val arr = ArrayList<Int>()
-                arr.add(0, 2)
-                arr.add(1, etid.text.toString().toInt())
-                arr.add(2, 202)
-                arr.add(3, 10)
-                arr.add(4, 0)
-                arr.add(5, etType.text.toString().toInt())
-                arr.add(6, 0)
-                arr.add(7, 0)
-                arr.add(8, 0)
-                arr.add(9, 3)
-                val inn = Intent(READ_DATA_KEY_TEST)
-                inn.putExtra("data", arr)
-                context?.sendBroadcast(Intent(inn))
-                dialog.dismiss()
-            }
+    //    Notification channels enable us app developers to group our notifications into groups—channels—with
+    //    the user having the ability to modify notification settings for the entire channel at once. For example,
+    //    for each channel, users can completely block all notifications, override the importance level, or allow a
+    //    notification badge to be shown. This new feature helps in greatly improving the user experience of an app
+    private fun createNotificationChannel(context: Context?) {
+        if (context == null) return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name: String = CHANNEL_NAME
+            val descriptionText = "new alarm detected"
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel(CHANNEL_ID, name, importance)
+            channel.description = descriptionText
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            val notificationManager = context.getSystemService(
+                NotificationManager::class.java
+            )
+            notificationManager?.createNotificationChannel(channel)
+        }
+    }
+
+    //snd notification when accept alarm
+    fun sendNotification() {
+        //if (myIntent == null) return
+        val intent = Intent(requireActivity(), MyScreensActivity::class.java)
+        intent.putExtra(CURRENT_ITEM_TOP_MENU_KEY, 2)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        val title = "title"//Objects.requireNonNull(myIntent.extras).getString("title")
+        val message = "message"//Objects.requireNonNull(myIntent.extras).getString("message")
+
+        //add extras data that accepted from push
+        //intent.putExtras(myIntent)
+        mNotificationManager =
+            requireActivity().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val oneTimeID = SystemClock.uptimeMillis()
+        val contentIntent: PendingIntent
+        contentIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            //set different request code to make different extra for each notification
+            PendingIntent.getActivity(
+                requireActivity(), oneTimeID.toInt(),
+                intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+            )
+        } else {
+            //set different request code to make different extra for each notification
+            PendingIntent.getActivity(
+                requireActivity(), oneTimeID.toInt(),
+                intent, PendingIntent.FLAG_UPDATE_CURRENT
+            )
         }
 
-        dialog?.show()
+
+        //Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        val notificationBuilder = NotificationCompat.Builder(
+            requireActivity(),
+            MyFirebaseMessagingService.NOTIFICATION_CHANNEL_ID
+        )
+            .setContentTitle(title)
+            .setContentText(message)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setSmallIcon(android.R.drawable.ic_popup_reminder)
+            .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL) //remove after click on notification
+            .setAutoCancel(true)
+        notificationBuilder.setContentIntent(contentIntent)
+
+        //send
+        mNotificationManager!!.notify(oneTimeID.toInt(), notificationBuilder.build())
+    }
+    //////////////////////////////////////
+
+    private fun sendNotification(msg: String) {
+        val intent = Intent(requireActivity(), MainActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        //        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+//                Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        mNotificationManager =
+            requireActivity().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val oneTimeID = SystemClock.uptimeMillis()
+        val contentIntent: PendingIntent
+        //long oneTimeID = SystemClock.uptimeMillis();
+        contentIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            //set different request code to make different extra for each notification
+            PendingIntent.getActivity(
+                requireActivity(), oneTimeID.toInt(),
+                intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+            )
+        } else {
+            //set different request code to make different extra for each notification
+            PendingIntent.getActivity(
+                requireActivity(), oneTimeID.toInt(),
+                intent, PendingIntent.FLAG_UPDATE_CURRENT
+            )
+        }
+
+
+        //Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        val notificationBuilder = NotificationCompat.Builder(
+            requireActivity(),
+            MyFirebaseMessagingService.NOTIFICATION_CHANNEL_ID
+        )
+            .setContentText(msg)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setSmallIcon(android.R.drawable.ic_popup_reminder)
+            .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL) //remove after click on notification
+            .setAutoCancel(true)
+        notificationBuilder.setContentIntent(contentIntent)
+        mNotificationManager!!.notify(oneTimeID.toInt(), notificationBuilder.build())
+        //mNotificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
     }
 
     private fun validIsEmpty(editText: EditText): Boolean {
@@ -535,67 +636,28 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                 }
             }
 
-//        //car ,intruder and off are relevant when type = seismic
-//        if (sensorItem.getTypeID() == SEISMIC_TYPE) {
-//            //set icon according to type alarm
-//            alarmTypeIcon =
-//                when (typeIdx) {
-//                    ALARM_CAR -> {
-//                        loc?.let { addMarker(it, CAR_ICON_ID, sensorItem.getName(), type) }
-//                    }
-//                    ALARM_INTRUDER -> {
-//                        loc?.let { addMarker(it, INTRUDER_ICON_ID, sensorItem.getName(), type) }
-//                    }
-//                    ALARM_SENSOR_OFF -> {
-//                        loc?.let { addMarker(it, SENSOR_OFF_ICON_ID, sensorItem.getName(), type) }
-//                    }
-//                    //ALARM_LOW_BATTERY->context?.let { con -> convertBitmapToBitmapDiscriptor(con,R.drawable.ic_alarm_low_battery)}
-//                    else -> {
-//                        loc?.let { addMarker(it, RED_ICON_ID, sensorItem.getName(), type) }
-//                    }
-//                }
-//        } else {
-//            alarmTypeIcon =
-//                when (sensorItem.getTypeID()) {
-//                    PIR_TYPE -> loc?.let {
-//                        addMarker(
-//                            it,
-//                            PIR_ICON_ID,
-//                            sensorItem.getName(),
-//                            sensorItem.getType()
-//                        )
-//                    }
-//                    RADAR_TYPE -> loc?.let {
-//                        addMarker(
-//                            it,
-//                            RADAR_ICON_ID,
-//                            sensorItem.getName(),
-//                            sensorItem.getType()
-//                        )
-//                    }
-//                    VIBRATION_TYPE -> loc?.let {
-//                        addMarker(
-//                            it,
-//                            VIBRATION_ICON_ID,
-//                            sensorItem.getName(),
-//                            sensorItem.getType()
-//                        )
-//                    }
-//                    else -> {
-//                        loc?.let {
-//                            addMarker(
-//                                it,
-//                                RED_ICON_ID,
-//                                sensorItem.getName(),
-//                                sensorItem.getType()
-//                            )
-//                        }
-//                    }
-//                }
-//        }
+
+        moveCamera(loc)
 
 
         return alarmTypeIcon
+    }
+
+    /**
+     * move the camera to location of alarm
+     */
+    private fun moveCamera(loc: LatLng?) {
+        val cameraPosition = CameraPosition.Builder()
+            .target(loc)
+            .zoom(ZOMM_LEVEL)
+            .tilt(20.0)
+            .build()
+
+
+        if (myMapboxMap != null) {
+            // Move camera to new position
+            myMapboxMap!!.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), 1000)
+        }
     }
 
     /**
@@ -906,7 +968,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
     }
 
 
-    //configureActivation map type
+    //configureActivatio3n map type
     private fun initMapType() {
         val _mapType = getIntInPreference(activity, MAP_SHOW_VIEW_TYPE_KEY, -1)
         //Log.d("testMapView", "_mapType:$_mapType")
@@ -956,8 +1018,9 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                         sensorItem.isSensorArmed
                     )
                 }
-                //remove the sensor alarm because it timeout
-                iteratorList.remove()
+                //set sensor alarm sound as off because it timeout
+                sensorItem.isSound = false
+                //iteratorList.remove()
             }
         }
     }
@@ -1246,6 +1309,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                 val type = inn.getStringExtra(CREATE_ALARM_TYPE_KEY)
                 val typeIdx = inn.getIntExtra(CREATE_ALARM_TYPE_INDEX_KEY, -1)
                 val isArmed = inn.getBooleanExtra(CREATE_ALARM_IS_ARMED, false)
+                Log.d("testAlarmMap", "MapmobFragment:showMarkers")
 
 //                //prevent duplicate alarm at the same sensor at the same time
 //                alarmSensorId?.let { removeSensorAlarmById(it) }
@@ -1339,7 +1403,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
 
                 val cameraPosition = CameraPosition.Builder()
                     .target(LatLng(myLocate?.latitude!!, myLocate?.longitude!!))
-                    .zoom(15.0)
+                    .zoom(ZOMM_LEVEL)
                     .tilt(20.0)
                     .build()
 

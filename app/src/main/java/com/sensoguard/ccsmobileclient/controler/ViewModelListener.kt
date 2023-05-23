@@ -61,10 +61,13 @@ class ViewModelListener(application: Application) : AndroidViewModel(application
             try {
 
                 //check if there is alarm sensor that already timeout
-                checkTimeOutSensors()
+                replaceSensorAlarmTimeOutToSensorMarker()
 
                 //if there is no alarm sensor the stop timer and sound of the alarm
-                if (UserSession.instance.alarmSensors == null || UserSession.instance.alarmSensors?.isEmpty()!!) {
+                if (UserSession.instance.alarmSensors == null
+                    || UserSession.instance.alarmSensors?.isEmpty()!!
+                    || isAllSensorAlarmTimeOutSound()
+                ) {
                     //stop the timer
                     shutDownTimer()
                     //stop the sound alarm
@@ -84,8 +87,22 @@ class ViewModelListener(application: Application) : AndroidViewModel(application
         }, 0, 1, TimeUnit.SECONDS)
     }
 
-    //check if there is alarm sensor that already timeout
-    private fun checkTimeOutSensors() {
+    /**
+     * check if all the alarms are timeout for sound only
+     */
+    private fun isAllSensorAlarmTimeOutSound(): Boolean {
+        val iteratorList = UserSession.instance.alarmSensors?.listIterator()
+        while (iteratorList != null && iteratorList.hasNext()) {
+            val sensorItem = iteratorList.next()
+            if (sensorItem.isSound) {
+                return false
+            }
+        }
+        return true
+    }
+
+    //check if there is alarm sensor that already timeout then set sound as off
+    private fun replaceSensorAlarmTimeOutToSensorMarker() {
         //get sensors from locally
         val sensorsArr = getSensorsFromLocally(getApplication<Application>().applicationContext)
         val iteratorList = sensorsArr?.listIterator()
@@ -95,7 +112,8 @@ class ViewModelListener(application: Application) : AndroidViewModel(application
             if (sensorAlarm != null) {
                 //if time out then remove the sensor from alarm list
                 if (isSensorAlarmTimeout(sensorAlarm)) {
-                    UserSession.instance.alarmSensors?.remove(sensorAlarm)
+                    sensorAlarm.isSound = false
+                    //UserSession.instance.alarmSensors?.remove(sensorAlarm)
                 }
             }
         }

@@ -14,9 +14,11 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
 
     <uses-feature android:name="android.hardware.location.gps" />
-    <!--    if version is upper then 28 there is android:requestLegacyExternalStorage="true"-->
+
     <uses-permission
             android:name="android.permission.WRITE_EXTERNAL_STORAGE"
             android:maxSdkVersion="28" />
@@ -46,14 +48,10 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             tools:targetApi="s">
-        <service
-                android:name="com.sensoguard.ccsmobileclient.services.TimerGeneralService"
-                android:exported="false"
-                android:permission="android.permission.BIND_JOB_SERVICE" />
-        <!-- <service -->
-        <!-- android:name=".services.TimerService" -->
-        <!-- android:enabled="true" -->
-        <!-- android:exported="true" /> -->
+        <!--        <service-->
+        <!--                android:name="com.sensoguard.ccsmobileclient.services.TimerGeneralService"-->
+        <!--                android:exported="false"-->
+        <!--                android:permission="android.permission.BIND_JOB_SERVICE" />-->
         <service
                 android:name="com.sensoguard.ccsmobileclient.services.TimerService"
                 android:exported="false"
@@ -67,7 +65,6 @@
         <activity android:name="com.sensoguard.ccsmobileclient.activities.ParentActivity" />
         <activity android:name="com.sensoguard.ccsmobileclient.activities.DownloadOfflineTilesActivity" />
         <activity android:name="com.sensoguard.ccsmobileclient.activities.MapmobActivity" /> <!-- <meta-data android:name="com.google.firebase.messaging.default_notification_icon" -->
-        <!-- android:resource="@mipmap/ic_launcher" /> -->
         <activity
                 android:name="com.sensoguard.ccsmobileclient.activities.InitAppActivity"
                 android:exported="true"
@@ -91,20 +88,7 @@
         <meta-data
                 android:name="com.google.android.geo.API_KEY"
                 android:value="AIzaSyC7lrolhXNPEeiNJuBccG6LgOwGRrBRQos" /> <!-- TODO restrict the api key -->
-        <!-- <service -->
-        <!-- android:name=".services.ServiceConnectSensor1" -->
-        <!-- android:enabled="true" -->
-        <!-- android:exported="true" /> -->
-        <service
-                android:name="com.sensoguard.ccsmobileclient.services.ServiceConnectSensor"
-                android:enabled="true"
-                android:exported="true"
-                android:permission="android.permission.BIND_JOB_SERVICE"
-                android:stopWithTask="false">
-            <intent-filter>
-                <action android:name="com.androidexample.screenonoff.AEScreenOnOffService" />
-            </intent-filter>
-        </service>
+
         <service
                 android:name="com.sensoguard.ccsmobileclient.services.ServiceFindLocation"
                 android:exported="true"
@@ -116,11 +100,10 @@
         <service
                 android:name="com.sensoguard.ccsmobileclient.services.ServiceFindSingleLocation"
                 android:permission="android.permission.BIND_JOB_SERVICE" /> <!-- <receiver android:name=".ScreenOnOffReceiver"> -->
-        <!-- <intent-filter> -->
-        <!-- <action android:name="android.intent.action.SCREEN_ON" /> -->
-        <!-- <action android:name="android.intent.action.SCREEN_OFF" /> -->
-        <!-- </intent-filter> -->
-        <!-- </receiver> -->
+        <service
+                android:name=".services.MediaService"
+                android:enabled="true"
+                android:exported="true" />
         <meta-data
                 android:name="io.fabric.ApiKey"
                 android:value="a2ca8d68e6eb68bf1b812b6e6f088bb62a139961" /> <!-- android:authorities="${applicationId}.contentprovider" -->

@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.sensoguard.ccsmobileclient.R
@@ -36,24 +37,52 @@ class InitAppActivity : ParentActivity() {
     }
 
 
-    //get the IMEI of the device and check it with the locally
-    private fun configureActivation(){
+    /**
+     * set notification post permission
+     */
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    fun checkNotificationPermission() {
+        if (ContextCompat.checkSelfPermission(
+                this.applicationContext,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            configureActivation()
+        } else {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.POST_NOTIFICATIONS
+                ),
+                PERMISSIONS_REQUEST_NOTIFICATION
+            )
 
-        myImei=getDeviceIMEI()
+        }
+    }
+
+
+    //get the IMEI of the device and check it with the locally
+    private fun configureActivation() {
+
+        myImei = getDeviceIMEI()
         //tvImei?.text = myImei
 
-        val localActivateCode= getStringInPreference(this, ACTIVATION_CODE_KEY, NO_DATA)
-        if(!localActivateCode.equals(NO_DATA)){
-            val myActivateCode= CryptoHandler.getInstance().encrypt(myImei)
-            if(localActivateCode!=null && myActivateCode.startsWith(localActivateCode)){
+        val localActivateCode = getStringInPreference(this, ACTIVATION_CODE_KEY, NO_DATA)
+        if (!localActivateCode.equals(NO_DATA)) {
+            val myActivateCode = CryptoHandler.getInstance().encrypt(myImei)
+            if (localActivateCode != null && myActivateCode.startsWith(localActivateCode)) {
                 val inn = Intent(this, MainActivity::class.java)
                 inn.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                 startActivity(inn)
-            }else{
-                Toast.makeText(this,resources.getString(R.string.wrong_activate_code), Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(
+                    this,
+                    resources.getString(R.string.wrong_activate_code),
+                    Toast.LENGTH_SHORT
+                ).show()
                 openActivation()
             }
-        }else{
+        } else {
             openActivation()
         }
     }
@@ -103,6 +132,15 @@ class InitAppActivity : ParentActivity() {
             PERMISSIONS_REQUEST_READ_PHONE_STATE -> {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        checkNotificationPermission()
+                    } else {
+                        configureActivation()
+                    }
+                }
+            }
+            PERMISSIONS_REQUEST_NOTIFICATION -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     configureActivation()
                 }
             }
@@ -122,7 +160,11 @@ class InitAppActivity : ParentActivity() {
                 Manifest.permission.READ_PHONE_STATE
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            configureActivation()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                checkNotificationPermission()
+            } else {
+                configureActivation()
+            }
         } else {
             ActivityCompat.requestPermissions(
                 this,
