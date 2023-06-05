@@ -622,13 +622,52 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
         alarmTypeIcon =
             when (typeIdx) {
                 ALARM_CAR -> {
-                    loc?.let { addMarker(it, CAR_ICON_ID, sensorItem.alarmSensorId, type) }
+                    loc?.let { addMarker(it, ALARM_CAR_STR, sensorItem.alarmSensorId, type) }
                 }
-                ALARM_INTRUDER -> {
-                    loc?.let { addMarker(it, INTRUDER_ICON_ID, sensorItem.alarmSensorId, type) }
+                ALARM_FOOTSTEPS -> {
+                    loc?.let { addMarker(it, ALARM_FOOTSTEPS_STR, sensorItem.alarmSensorId, type) }
                 }
-                ALARM_SENSOR_OFF -> {
-                    loc?.let { addMarker(it, SENSOR_OFF_ICON_ID, sensorItem.alarmSensorId, type) }
+                ALARM_DIGGING -> {
+                    loc?.let { addMarker(it, ALARM_DIGGING_STR, sensorItem.alarmSensorId, type) }
+                }
+                ALARM_EXTERNAL -> {
+                    loc?.let { addMarker(it, ALARM_EXTERNAL_STR, sensorItem.alarmSensorId, type) }
+                }
+                ALARM_DISCONNCTED -> {
+                    loc?.let {
+                        addMarker(
+                            it,
+                            ALARM_DISCONNCTED_STR,
+                            sensorItem.alarmSensorId,
+                            type
+                        )
+                    }
+                }
+                ALARM_KEEP_ALIVE -> {
+                    loc?.let { addMarker(it, ALARM_KEEP_ALIVE_STR, sensorItem.alarmSensorId, type) }
+                }
+                ALARM_LOW_BATTERY -> {
+                    loc?.let {
+                        addMarker(
+                            it,
+                            ALARM_LOW_BATTERY_STR,
+                            sensorItem.alarmSensorId,
+                            type
+                        )
+                    }
+                }
+                ALARM_DUAL_TECH -> {
+                    loc?.let { addMarker(it, ALARM_DUAL_TECH_STR, sensorItem.alarmSensorId, type) }
+                }
+                ALARM_GATEWAY_DISCONNECTED -> {
+                    loc?.let {
+                        addMarker(
+                            it,
+                            ALARM_GATEWAY_DISCONNECTED_STR,
+                            sensorItem.alarmSensorId,
+                            type
+                        )
+                    }
                 }
                 //ALARM_LOW_BATTERY->context?.let { con -> convertBitmapToBitmapDiscriptor(con,R.drawable.ic_alarm_low_battery)}
                 else -> {
@@ -756,33 +795,48 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                     )
                 )
                 .withImage(
-                    CAR_ICON_ID, BitmapFactory.decodeResource(
+                    ALARM_CAR_STR, BitmapFactory.decodeResource(
                         requireActivity().resources, R.drawable.ic_alarm_car
                     )
                 )
                 .withImage(
-                    INTRUDER_ICON_ID, BitmapFactory.decodeResource(
+                    ALARM_FOOTSTEPS_STR, BitmapFactory.decodeResource(
                         requireActivity().resources, R.drawable.ic_alarm_intruder
                     )
                 )
                 .withImage(
-                    SENSOR_OFF_ICON_ID, BitmapFactory.decodeResource(
+                    ALARM_DIGGING_STR, BitmapFactory.decodeResource(
+                        requireActivity().resources, R.drawable.ic_digging
+                    )
+                )
+                .withImage(
+                    ALARM_EXTERNAL_STR, BitmapFactory.decodeResource(
+                        requireActivity().resources, R.drawable.ic_red_pin
+                    )
+                )
+                .withImage(
+                    ALARM_DISCONNCTED_STR, BitmapFactory.decodeResource(
                         requireActivity().resources, R.drawable.ic_alarm_sensor_off
                     )
                 )
                 .withImage(
-                    PIR_ICON_ID, BitmapFactory.decodeResource(
-                        requireActivity().resources, R.drawable.ic_pir
+                    ALARM_KEEP_ALIVE_STR, BitmapFactory.decodeResource(
+                        requireActivity().resources, R.drawable.ic_green_pin
                     )
                 )
                 .withImage(
-                    RADAR_ICON_ID, BitmapFactory.decodeResource(
-                        requireActivity().resources, R.drawable.ic_radar
+                    ALARM_LOW_BATTERY_STR, BitmapFactory.decodeResource(
+                        requireActivity().resources, R.drawable.ic_alarm_low_battery
                     )
                 )
                 .withImage(
-                    VIBRATION_ICON_ID, BitmapFactory.decodeResource(
-                        requireActivity().resources, R.drawable.ic_vibration
+                    ALARM_DUAL_TECH_STR, BitmapFactory.decodeResource(
+                        requireActivity().resources, R.drawable.ic_blue_pin
+                    )
+                )
+                .withImage(
+                    ALARM_GATEWAY_DISCONNECTED_STR, BitmapFactory.decodeResource(
+                        requireActivity().resources, R.drawable.ic_alarm_sensor_off
                     )
                 )
                 .withImage(
@@ -813,12 +867,18 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                                     Expression.stop(GRAY_ICON_ID, GRAY_ICON_ID),
                                     Expression.stop(BLUE_ICON_ID, BLUE_ICON_ID),
                                     Expression.stop(GREEN_ICON_ID, GREEN_ICON_ID),
-                                    Expression.stop(CAR_ICON_ID, CAR_ICON_ID),
-                                    Expression.stop(INTRUDER_ICON_ID, INTRUDER_ICON_ID),
-                                    Expression.stop(SENSOR_OFF_ICON_ID, SENSOR_OFF_ICON_ID),
-                                    Expression.stop(PIR_ICON_ID, PIR_ICON_ID),
-                                    Expression.stop(RADAR_ICON_ID, RADAR_ICON_ID),
-                                    Expression.stop(VIBRATION_ICON_ID, VIBRATION_ICON_ID),
+                                    Expression.stop(ALARM_CAR_STR, ALARM_CAR_STR),
+                                    Expression.stop(ALARM_FOOTSTEPS_STR, ALARM_FOOTSTEPS_STR),
+                                    Expression.stop(ALARM_DIGGING_STR, ALARM_DIGGING_STR),
+                                    Expression.stop(ALARM_EXTERNAL_STR, ALARM_EXTERNAL_STR),
+                                    Expression.stop(ALARM_DISCONNCTED_STR, ALARM_DISCONNCTED_STR),
+                                    Expression.stop(ALARM_KEEP_ALIVE_STR, ALARM_KEEP_ALIVE_STR),
+                                    Expression.stop(ALARM_LOW_BATTERY_STR, ALARM_LOW_BATTERY_STR),
+                                    Expression.stop(ALARM_DUAL_TECH_STR, ALARM_DUAL_TECH_STR),
+                                    Expression.stop(
+                                        ALARM_GATEWAY_DISCONNECTED_STR,
+                                        ALARM_GATEWAY_DISCONNECTED_STR
+                                    ),
                                     Expression.stop(RED_ICON_ID, RED_ICON_ID)
                                 )
                             ),
@@ -879,33 +939,48 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                         )
                     )
                     .withImage(
-                        CAR_ICON_ID, BitmapFactory.decodeResource(
+                        ALARM_CAR_STR, BitmapFactory.decodeResource(
                             requireActivity().resources, R.drawable.ic_alarm_car
                         )
                     )
                     .withImage(
-                        INTRUDER_ICON_ID, BitmapFactory.decodeResource(
+                        ALARM_FOOTSTEPS_STR, BitmapFactory.decodeResource(
                             requireActivity().resources, R.drawable.ic_alarm_intruder
                         )
                     )
                     .withImage(
-                        SENSOR_OFF_ICON_ID, BitmapFactory.decodeResource(
+                        ALARM_DIGGING_STR, BitmapFactory.decodeResource(
+                            requireActivity().resources, R.drawable.ic_digging
+                        )
+                    )
+                    .withImage(
+                        ALARM_EXTERNAL_STR, BitmapFactory.decodeResource(
+                            requireActivity().resources, R.drawable.ic_red_pin
+                        )
+                    )
+                    .withImage(
+                        ALARM_DISCONNCTED_STR, BitmapFactory.decodeResource(
                             requireActivity().resources, R.drawable.ic_alarm_sensor_off
                         )
                     )
                     .withImage(
-                        PIR_ICON_ID, BitmapFactory.decodeResource(
-                            requireActivity().resources, R.drawable.ic_pir
+                        ALARM_KEEP_ALIVE_STR, BitmapFactory.decodeResource(
+                            requireActivity().resources, R.drawable.ic_green_pin
                         )
                     )
                     .withImage(
-                        RADAR_ICON_ID, BitmapFactory.decodeResource(
-                            requireActivity().resources, R.drawable.ic_radar
+                        ALARM_LOW_BATTERY_STR, BitmapFactory.decodeResource(
+                            requireActivity().resources, R.drawable.ic_alarm_low_battery
                         )
                     )
                     .withImage(
-                        VIBRATION_ICON_ID, BitmapFactory.decodeResource(
-                            requireActivity().resources, R.drawable.ic_vibration
+                        ALARM_DUAL_TECH_STR, BitmapFactory.decodeResource(
+                            requireActivity().resources, R.drawable.ic_blue_pin
+                        )
+                    )
+                    .withImage(
+                        ALARM_GATEWAY_DISCONNECTED_STR, BitmapFactory.decodeResource(
+                            requireActivity().resources, R.drawable.ic_alarm_sensor_off
                         )
                     )
                     .withImage(
@@ -936,12 +1011,24 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                                         Expression.stop(GRAY_ICON_ID, GRAY_ICON_ID),
                                         Expression.stop(BLUE_ICON_ID, BLUE_ICON_ID),
                                         Expression.stop(GREEN_ICON_ID, GREEN_ICON_ID),
-                                        Expression.stop(CAR_ICON_ID, CAR_ICON_ID),
-                                        Expression.stop(INTRUDER_ICON_ID, INTRUDER_ICON_ID),
-                                        Expression.stop(SENSOR_OFF_ICON_ID, SENSOR_OFF_ICON_ID),
-                                        Expression.stop(PIR_ICON_ID, PIR_ICON_ID),
-                                        Expression.stop(RADAR_ICON_ID, RADAR_ICON_ID),
-                                        Expression.stop(VIBRATION_ICON_ID, VIBRATION_ICON_ID),
+                                        Expression.stop(ALARM_CAR_STR, ALARM_CAR_STR),
+                                        Expression.stop(ALARM_FOOTSTEPS_STR, ALARM_FOOTSTEPS_STR),
+                                        Expression.stop(ALARM_DIGGING_STR, ALARM_DIGGING_STR),
+                                        Expression.stop(ALARM_EXTERNAL_STR, ALARM_EXTERNAL_STR),
+                                        Expression.stop(
+                                            ALARM_DISCONNCTED_STR,
+                                            ALARM_DISCONNCTED_STR
+                                        ),
+                                        Expression.stop(ALARM_KEEP_ALIVE_STR, ALARM_KEEP_ALIVE_STR),
+                                        Expression.stop(
+                                            ALARM_LOW_BATTERY_STR,
+                                            ALARM_LOW_BATTERY_STR
+                                        ),
+                                        Expression.stop(ALARM_DUAL_TECH_STR, ALARM_DUAL_TECH_STR),
+                                        Expression.stop(
+                                            ALARM_GATEWAY_DISCONNECTED_STR,
+                                            ALARM_GATEWAY_DISCONNECTED_STR
+                                        ),
                                         Expression.stop(RED_ICON_ID, RED_ICON_ID)
                                     )
                                 ),

@@ -11,15 +11,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintTop_toTopOf="parent"
-
             >
-
-    <!--&gt;-->
-
-    <include
-            android:id="@+id/inHeader"
-            layout="@layout/header_alarm_log"
-    />
 
 
     <!-- TODO: Update blank fragment layout -->

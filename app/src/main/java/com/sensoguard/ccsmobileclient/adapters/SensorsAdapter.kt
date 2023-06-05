@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.sensoguard.ccsmobileclient.R
 import com.sensoguard.ccsmobileclient.classes.Sensor
 import com.sensoguard.ccsmobileclient.interfaces.OnAdapterListener
-import java.util.*
 
 
 class SensorsAdapter(
@@ -69,7 +68,7 @@ class SensorsAdapter(
 
         fun bindReservation(sensor: Sensor) {
             tvId = _itemView.findViewById(R.id.tvId)
-            tvName = _itemView.findViewById(R.id.tvName)
+            tvName = _itemView.findViewById(R.id.tvZone)
             tvType = _itemView.findViewById(R.id.tvType)
             togIsActive = _itemView.findViewById(R.id.togIsActive)
            etName = _itemView.findViewById(R.id.etName)

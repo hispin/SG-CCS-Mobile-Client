@@ -69,10 +69,27 @@ const val CURRENT_LOCATION = "currentLocation"
 
 const val MAIN_MENU_NUM_ITEM = 3
 
+
+const val ALARM_CAR_STR = "car"
+const val ALARM_FOOTSTEPS_STR = "Footsteps"
+const val ALARM_DIGGING_STR = "Digging"
+const val ALARM_EXTERNAL_STR = "External sensor"
+const val ALARM_DISCONNCTED_STR = "Sensor disconnected"
+const val ALARM_KEEP_ALIVE_STR = "Keep alive"
+const val ALARM_LOW_BATTERY_STR = "Low battery"
+const val ALARM_DUAL_TECH_STR = "Dual tech"
+const val ALARM_GATEWAY_DISCONNECTED_STR = "Gateway disconnected"
+
+
 const val ALARM_CAR = 0//"car"
-const val ALARM_INTRUDER = 1//"intruder"
-const val ALARM_SENSOR_OFF = 3//"sensor disconnected"
-const val ALARM_LOW_BATTERY = "motion"
+const val ALARM_FOOTSTEPS = 1//"intruder"
+const val ALARM_DIGGING = 2
+const val ALARM_EXTERNAL = 3//"sensor disconnected"
+const val ALARM_DISCONNCTED = 4
+const val ALARM_KEEP_ALIVE = 5
+const val ALARM_LOW_BATTERY = 6
+const val ALARM_DUAL_TECH = 7
+const val ALARM_GATEWAY_DISCONNECTED = 8
 
 const val USB_DEVICE_CONNECT_STATUS = "usbDeviceConnect"
 const val REGISTER_TOKEN_STATUS = "register_token_status"

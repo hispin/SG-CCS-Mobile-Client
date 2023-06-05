@@ -1,5 +1,23 @@
 package com.sensoguard.ccsmobileclient.services;
 
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_CAR;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_CAR_STR;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_DIGGING;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_DIGGING_STR;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_DISCONNCTED;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_DISCONNCTED_STR;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_DUAL_TECH;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_DUAL_TECH_STR;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_EXTERNAL;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_EXTERNAL_STR;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_FOOTSTEPS;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_FOOTSTEPS_STR;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_GATEWAY_DISCONNECTED;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_GATEWAY_DISCONNECTED_STR;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_KEEP_ALIVE;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_KEEP_ALIVE_STR;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_LOW_BATTERY;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_LOW_BATTERY_STR;
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_TYPE_INDEX_KEY;
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.CREATE_ALARM_ID_KEY;
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.CREATE_ALARM_IS_ARMED;
@@ -120,9 +138,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Log.d("testAlarmMap", "accept msg");
         Intent myIntent = remoteMessage.toIntent();
         if (myIntent != null) {
-            parseIntentExtra(myIntent);
             createChannelAndHandleNotifications(getApplicationContext());
-            sendNotification(myIntent);
+            parseIntentExtra(myIntent);
+            //sendNotification(myIntent);
             //start media
             //startServiceMedia();
             startWorkerMedia();
@@ -152,40 +170,75 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     //parse intent extra came from server
     private void parseIntentExtra(Intent inn) {
 
-        String title = inn.getExtras().getString("title");
-        String message = inn.getExtras().getString("message");
-        String link = inn.getExtras().getString("openURL");
-        String imagePath = inn.getExtras().getString("image");
+        //String title = inn.getExtras().getString("title");
+        String message = inn.getExtras().getString("message", "-1");
+        //String link = inn.getExtras().getString("openURL");
+        //String imagePath = inn.getExtras().getString("image");
 
 
-        if (title != null)
-            Timber.d(title);
-        if (message != null)
-            Timber.d(message);
-        if (link != null)
-            Timber.d(link);
-        if (imagePath != null)
-            Timber.d(imagePath);
+//        if (title != null)
+//            Timber.d(title);
+//        if (message != null)
+//            Timber.d(message);
+//        if (link != null)
+//            Timber.d(link);
+//        if (imagePath != null)
+//            Timber.d(imagePath);
 
-        if (isJsonValid(message)) {
-            try {
-                JSONObject jObject = new JSONObject(message);
-                double lat = jObject.getDouble("Latitude");
-                double lon = jObject.getDouble("Longitude");
-                //Log.d("testAlarmMap","lat "+lat+" lon "+lon);
-                String alarmId = jObject.getString("Gateway");
-                String typeAlarm = jObject.getString("AlarmType");
-                String zone = jObject.getString("Unit");
-                //save the index of type for other languages then english
-                int typeIdx = 0;
-                if (typeAlarm.equals("Car"))
-                    typeIdx = 0;
-                else if (typeAlarm.equals("Footsteps"))
-                    typeIdx = 1;
-                sendingManage(alarmId, lat, lon, typeAlarm, true, typeIdx, zone, true);
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            }
+//        if (isJsonValid(message)) {
+//            try {
+//                JSONObject jObject = new JSONObject(message);
+//                double lat = jObject.getDouble("Latitude");
+//                double lon = jObject.getDouble("Longitude");
+//                //Log.d("testAlarmMap","lat "+lat+" lon "+lon);
+//                String alarmId = jObject.getString("Gateway");
+//                String typeAlarm = jObject.getString("AlarmType");
+//                String zone = jObject.getString("Unit");
+//                //save the index of type for other languages then english
+//                int typeIdx = 0;
+//                if (typeAlarm.equals("Car"))
+//                    typeIdx = 0;
+//                else if (typeAlarm.equals("Footsteps"))
+//                    typeIdx = 1;
+//                sendingManage(alarmId, lat, lon, typeAlarm, true, typeIdx, zone, true);
+//            } catch (JSONException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
+
+        if (message.equals("-1")) {
+            String title = inn.getExtras().getString("title");
+            //double lat = inn.getExtras().getFloat("latitude");
+            double lat = Double.parseDouble(inn.getStringExtra("latitude"));
+            //double lon = inn.getExtras().getFloat("longitude");
+            double lon = Double.parseDouble(inn.getStringExtra("longitude"));
+            Log.d("testAlarmMap", "lat " + lat + " lon " + lon);
+            String alarmId = inn.getExtras().getString("gateway");
+            String typeAlarm = inn.getExtras().getString("alarmType");
+            String zone = inn.getExtras().getString("unit");
+            //save the index of type for other languages then english
+            int typeIdx = 0;
+            if (typeAlarm.equals(ALARM_CAR_STR))
+                typeIdx = ALARM_CAR;
+            else if (typeAlarm.equals(ALARM_FOOTSTEPS_STR))
+                typeIdx = ALARM_FOOTSTEPS;
+            else if (typeAlarm.equals(ALARM_DIGGING_STR))
+                typeIdx = ALARM_DIGGING;
+            else if (typeAlarm.equals(ALARM_EXTERNAL_STR))
+                typeIdx = ALARM_EXTERNAL;
+            else if (typeAlarm.equals(ALARM_DISCONNCTED_STR))
+                typeIdx = ALARM_DISCONNCTED;
+            else if (typeAlarm.equals(ALARM_KEEP_ALIVE_STR))
+                typeIdx = ALARM_KEEP_ALIVE;
+            else if (typeAlarm.equals(ALARM_LOW_BATTERY_STR))
+                typeIdx = ALARM_LOW_BATTERY;
+            else if (typeAlarm.equals(ALARM_DUAL_TECH_STR))
+                typeIdx = ALARM_DUAL_TECH;
+            else if (typeAlarm.equals(ALARM_GATEWAY_DISCONNECTED_STR))
+                typeIdx = ALARM_GATEWAY_DISCONNECTED;
+
+            sendingManage(alarmId, lat, lon, typeAlarm, true, typeIdx, zone, true);
+            sendNotification(lat, lon, alarmId, typeAlarm, zone, typeIdx, title);
         } else {
             if (message != null) {
                 String[] arr = message.split(" ");
@@ -220,12 +273,28 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
                             //save the index of type for other languages then english
                             int typeIdx = 0;
-                            if (typeAlarm.equals("Car"))
-                                typeIdx = 0;
-                            else if (typeAlarm.equals("Footsteps"))
-                                typeIdx = 1;
+                            if (typeAlarm.equals(ALARM_CAR_STR))
+                                typeIdx = ALARM_CAR;
+                            else if (typeAlarm.equals(ALARM_FOOTSTEPS_STR))
+                                typeIdx = ALARM_FOOTSTEPS;
+                            else if (typeAlarm.equals(ALARM_DIGGING_STR))
+                                typeIdx = ALARM_DIGGING;
+                            else if (typeAlarm.equals(ALARM_EXTERNAL_STR))
+                                typeIdx = ALARM_EXTERNAL;
+                            else if (typeAlarm.equals(ALARM_DISCONNCTED_STR))
+                                typeIdx = ALARM_DISCONNCTED;
+                            else if (typeAlarm.equals(ALARM_KEEP_ALIVE_STR))
+                                typeIdx = ALARM_KEEP_ALIVE;
+                            else if (typeAlarm.equals(ALARM_LOW_BATTERY_STR))
+                                typeIdx = ALARM_LOW_BATTERY;
+                            else if (typeAlarm.equals(ALARM_DUAL_TECH_STR))
+                                typeIdx = ALARM_DUAL_TECH;
+                            else if (typeAlarm.equals(ALARM_GATEWAY_DISCONNECTED_STR))
+                                typeIdx = ALARM_GATEWAY_DISCONNECTED;
+
 
                             sendingManage(alarmId, lat, lon, typeAlarm, true, typeIdx, zone, false);
+                            sendNotification(lat, lon, alarmId, typeAlarm, zone, typeIdx, "title");
 
                         } catch (NumberFormatException ex) {
                             ex.printStackTrace();
@@ -234,7 +303,70 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 }
 
             }
+
         }
+
+
+    }
+
+    /**
+     * send notification
+     *
+     * @param lat
+     * @param lon
+     * @param alarmId
+     * @param typeAlarm
+     * @param zone
+     * @param typeIdx
+     * @param title
+     */
+    private void sendNotification(double lat, double lon, String alarmId, String typeAlarm, String zone, int typeIdx, String title) {
+
+
+        Intent intent = new Intent(ctx, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        String showMsg = "";
+
+        showMsg += alarmId;
+        showMsg += "," + zone;
+        showMsg += "," + typeAlarm;
+
+
+        mNotificationManager = (NotificationManager)
+                ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+
+
+        long oneTimeID = SystemClock.uptimeMillis();
+
+        PendingIntent contentIntent;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            //set different request code to make different extra for each notification
+            contentIntent = PendingIntent.getActivity(ctx, (int) oneTimeID,
+                    intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+        } else {
+            //set different request code to make different extra for each notification
+            contentIntent = PendingIntent.getActivity(ctx, (int) oneTimeID,
+                    intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        }
+
+
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(
+                ctx,
+                NOTIFICATION_CHANNEL_ID)
+                .setContentTitle(title)
+                .setContentText(showMsg)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setSmallIcon(android.R.drawable.ic_popup_reminder)
+                .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
+                //remove after click on notification
+                .setAutoCancel(true);
+
+        notificationBuilder.setContentIntent(contentIntent);
+
+        //send
+        mNotificationManager.notify((int) oneTimeID, notificationBuilder.build());
     }
 
     /**
@@ -320,79 +452,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
     }
 
-    private void sendNotification(Intent myIntent) {
 
-        if (myIntent == null)
-            return;
-
-        Intent intent = new Intent(ctx, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
-        String title = Objects.requireNonNull(myIntent.getExtras()).getString("title");
-        String message = Objects.requireNonNull(myIntent.getExtras()).getString("message");
-        String showMsg = "";
-        JSONObject jObject = null;
-        try {
-            jObject = new JSONObject(message);
-            String alarmId = jObject.getString("Gateway");
-            showMsg += alarmId;
-            String zone = jObject.getString("Unit");
-            showMsg += "," + zone;
-            String typeAlarm = jObject.getString("AlarmType");
-            showMsg += "," + typeAlarm;
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
-
-
-//        if (title != null)
-//            Log.d("CSSmyFire", title);
-
-        //add extras data that accepted from push
-        intent.putExtras(myIntent);
-
-        mNotificationManager = (NotificationManager)
-                ctx.getSystemService(Context.NOTIFICATION_SERVICE);
-
-
-        long oneTimeID = SystemClock.uptimeMillis();
-
-        PendingIntent contentIntent;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            //set different request code to make different extra for each notification
-            contentIntent = PendingIntent.getActivity(ctx, (int) oneTimeID,
-                    intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
-        } else {
-            //set different request code to make different extra for each notification
-            contentIntent = PendingIntent.getActivity(ctx, (int) oneTimeID,
-                    intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        }
-
-//        NotificationCompat.BigTextStyle bigStyle =
-//                new NotificationCompat.BigTextStyle();
-//        bigStyle.setBigContentTitle(title);
-//        bigStyle.bigText(showMsg);
-
-        //Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(
-                ctx,
-                NOTIFICATION_CHANNEL_ID)
-                //.setStyle(bigStyle)
-                .setContentTitle(title)
-                .setContentText(showMsg)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setSmallIcon(android.R.drawable.ic_popup_reminder)
-                .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
-                //remove after click on notification
-                .setAutoCancel(true);
-
-        notificationBuilder.setContentIntent(contentIntent);
-
-        //send
-        mNotificationManager.notify((int) oneTimeID, notificationBuilder.build());
-
-    }
 
     @Override
     public void onNewToken(@NonNull @NotNull String s) {

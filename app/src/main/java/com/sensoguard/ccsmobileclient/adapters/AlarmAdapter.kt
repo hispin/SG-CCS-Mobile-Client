@@ -58,7 +58,7 @@ class AlarmAdapter (private var alarms: ArrayList<Alarm>, val context: Context, 
 
         fun bindReservation(alarm: Alarm) {
             tvHub = _itemView.findViewById(R.id.tvId)
-            tvZone = _itemView.findViewById(R.id.tvName)
+            tvZone = _itemView.findViewById(R.id.tvZone)
             tvDate = _itemView.findViewById(R.id.tvDate)
             tvType = _itemView.findViewById(R.id.tvType)
             tvTime = _itemView.findViewById(R.id.tvTime)

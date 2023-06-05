@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.sensoguard.ccsmobileclient.R
 import com.sensoguard.ccsmobileclient.classes.Sensor
 import com.sensoguard.ccsmobileclient.interfaces.OnAdapterListener
-import java.util.*
 
 
 class SensorsDialogAdapter (private var sensors: ArrayList<Sensor>, val context: Context, val onAdapterListener: OnAdapterListener, var itemClick: (Sensor) -> Unit) : RecyclerView.Adapter<SensorsDialogAdapter.ViewHolder>() {
@@ -76,7 +75,7 @@ class SensorsDialogAdapter (private var sensors: ArrayList<Sensor>, val context:
 
         fun bindReservation(sensor: Sensor) {
             tvId = _itemView.findViewById(R.id.tvId)
-            tvName = _itemView.findViewById(R.id.tvName)
+            tvName = _itemView.findViewById(R.id.tvZone)
             etName = _itemView.findViewById(R.id.etName)
             ibEditName = _itemView.findViewById(R.id.ibEditName)
             togIsSelected = _itemView.findViewById(R.id.togIsSelected)

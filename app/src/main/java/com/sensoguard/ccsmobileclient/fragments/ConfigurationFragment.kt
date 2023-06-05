@@ -17,11 +17,12 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatEditText
-import androidx.appcompat.widget.AppCompatImageButton
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.sensoguard.ccsmobileclient.R
 import com.sensoguard.ccsmobileclient.adapters.GeneralItemMenuAdapter
-import com.sensoguard.ccsmobileclient.classes.*
+import com.sensoguard.ccsmobileclient.classes.GeneralItemMenu
+import com.sensoguard.ccsmobileclient.classes.LanguageManager
+import com.sensoguard.ccsmobileclient.classes.MyEmailAccount
 import com.sensoguard.ccsmobileclient.global.*
 import com.sensoguard.ccsmobileclient.interfaces.CallToParentInterface
 import com.sensoguard.ccsmobileclient.interfaces.OnFragmentListener
@@ -49,8 +50,8 @@ open class ConfigurationFragment : ParentFragment(), CallToParentInterface {
     private var languageValue: TextView? = null
     private var listener: OnFragmentListener? = null
     private var togIsSensorAlwaysShow: ToggleButton? = null
-    private var ibSetEmailDetails: AppCompatImageButton? = null
-    private var togForwardSensorEmail: ToggleButton? = null
+    //private var ibSetEmailDetails: AppCompatImageButton? = null
+    //private var togForwardSensorEmail: ToggleButton? = null
 
 
     override fun onAttach(context: Context) {
@@ -110,7 +111,7 @@ open class ConfigurationFragment : ParentFragment(), CallToParentInterface {
                 setLongInPreference(activity, ALARM_FLICKERING_DURATION_KEY, timeFlicker)
                 Toast.makeText(
                     activity,
-                    resources.getString(com.sensoguard.ccsmobileclient.R.string.time_flickering_save_successfully),
+                    resources.getString(R.string.time_flickering_save_successfully),
                     Toast.LENGTH_SHORT
                 ).show()
             } catch (ex: NumberFormatException) {
@@ -135,23 +136,23 @@ open class ConfigurationFragment : ParentFragment(), CallToParentInterface {
             setBooleanInPreference(activity, IS_NOTIFICATION_SOUND_KEY, isChecked)
         }
 
-        togForwardSensorEmail = view.findViewById(R.id.togForwardSensorEmail)
-        togForwardSensorEmail?.isChecked =
-            getBooleanInPreference(activity, IS_FORWARD_ALARM_EMAIL, false)
-        togForwardSensorEmail?.setOnCheckedChangeListener { buttonView, isChecked ->
-            if (isChecked) {
-                if (checkFilledEmail()) {
-                    //update the status of the alarm vibrate : on/off
-                    setBooleanInPreference(activity, IS_FORWARD_ALARM_EMAIL, isChecked)
-                } else {
-                    togForwardSensorEmail?.isChecked =
-                        getBooleanInPreference(activity, IS_FORWARD_ALARM_EMAIL, false)
-                }
-            } else {
-                //update the status of the alarm vibrate : on/off
-                setBooleanInPreference(activity, IS_FORWARD_ALARM_EMAIL, isChecked)
-            }
-        }
+//        togForwardSensorEmail = view.findViewById(R.id.togForwardSensorEmail)
+//        togForwardSensorEmail?.isChecked =
+//            getBooleanInPreference(activity, IS_FORWARD_ALARM_EMAIL, false)
+//        togForwardSensorEmail?.setOnCheckedChangeListener { buttonView, isChecked ->
+//            if (isChecked) {
+//                if (checkFilledEmail()) {
+//                    //update the status of the alarm vibrate : on/off
+//                    setBooleanInPreference(activity, IS_FORWARD_ALARM_EMAIL, isChecked)
+//                } else {
+//                    togForwardSensorEmail?.isChecked =
+//                        getBooleanInPreference(activity, IS_FORWARD_ALARM_EMAIL, false)
+//                }
+//            } else {
+//                //update the status of the alarm vibrate : on/off
+//                setBooleanInPreference(activity, IS_FORWARD_ALARM_EMAIL, isChecked)
+//            }
+//        }
 
         togIsSensorAlwaysShow = view.findViewById(R.id.togIsSensorAlwaysShow)
         togIsSensorAlwaysShow?.isChecked =
@@ -183,10 +184,10 @@ open class ConfigurationFragment : ParentFragment(), CallToParentInterface {
 
         languageValue = view.findViewById(R.id.languageValue)
 
-        ibSetEmailDetails = view.findViewById(R.id.ibSetEmailDetails)
-        ibSetEmailDetails?.setOnClickListener {
-            openSetEmailDetails()
-        }
+//        ibSetEmailDetails = view.findViewById(R.id.ibSetEmailDetails)
+//        ibSetEmailDetails?.setOnClickListener {
+//            openSetEmailDetails()
+//        }
 
 
         return view
@@ -281,7 +282,7 @@ open class ConfigurationFragment : ParentFragment(), CallToParentInterface {
                 txtAlarmSoundValue?.text = title
                 setStringInPreference(activity, SELECTED_NOTIFICATION_SOUND_KEY, uri.toString())
             } else {
-                txtAlarmSoundValue?.text = resources.getString(com.sensoguard.ccsmobileclient.R.string.no_selected_sound)
+                txtAlarmSoundValue?.text = resources.getString(R.string.no_selected_sound)
             }
         }
     }
