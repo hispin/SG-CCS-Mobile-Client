@@ -225,7 +225,16 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
 
     private fun clearAlarms() {
         UserSession.instance.alarmSensors = ArrayList()
+        removeMarker()
         showMarkers()
+    }
+
+    /**
+     * remove marker with details
+     */
+    private fun removeMarker() {
+        if (popup != null)
+            popup?.dismiss()
     }
 
     //get last location
@@ -325,7 +334,8 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                     sensorItem.markerFeature = showSensorAlarmMarker(
                         sensorItem,
                         sensorItem.type,
-                        sensorItem.typeIdx
+                        sensorItem.typeIdx,
+                        sensorItem.zone
                     )
 //                    }
 
@@ -415,7 +425,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
 
         Log.d("testTest", "showTestEventDialog")
 
-        addAlarmToQueue("GSM_Dani-GSM_Unit1", 34.0, 34.0, "Footsteps", true, 0)
+        addAlarmToQueue("GSM_Dani-GSM_Unit1", 34.0, 34.0, "Footsteps", true, 0, "")
 
         sendNotification("test")
         //sendNotification()
@@ -604,7 +614,8 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
     private fun showSensorAlarmMarker(
         sensorItem: AlarmSensor,
         type: String,
-        typeIdx: Int?
+        typeIdx: Int?,
+        zone: String
     ): Feature? {
 
         if (mapView == null) {
@@ -622,16 +633,40 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
         alarmTypeIcon =
             when (typeIdx) {
                 ALARM_CAR -> {
-                    loc?.let { addMarker(it, ALARM_CAR_STR, sensorItem.alarmSensorId, type) }
+                    loc?.let { addMarker(it, ALARM_CAR_STR, sensorItem.alarmSensorId, type, zone) }
                 }
                 ALARM_FOOTSTEPS -> {
-                    loc?.let { addMarker(it, ALARM_FOOTSTEPS_STR, sensorItem.alarmSensorId, type) }
+                    loc?.let {
+                        addMarker(
+                            it,
+                            ALARM_FOOTSTEPS_STR,
+                            sensorItem.alarmSensorId,
+                            type,
+                            zone
+                        )
+                    }
                 }
                 ALARM_DIGGING -> {
-                    loc?.let { addMarker(it, ALARM_DIGGING_STR, sensorItem.alarmSensorId, type) }
+                    loc?.let {
+                        addMarker(
+                            it,
+                            ALARM_DIGGING_STR,
+                            sensorItem.alarmSensorId,
+                            type,
+                            zone
+                        )
+                    }
                 }
                 ALARM_EXTERNAL -> {
-                    loc?.let { addMarker(it, ALARM_EXTERNAL_STR, sensorItem.alarmSensorId, type) }
+                    loc?.let {
+                        addMarker(
+                            it,
+                            ALARM_EXTERNAL_STR,
+                            sensorItem.alarmSensorId,
+                            type,
+                            zone
+                        )
+                    }
                 }
                 ALARM_DISCONNCTED -> {
                     loc?.let {
@@ -639,12 +674,21 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                             it,
                             ALARM_DISCONNCTED_STR,
                             sensorItem.alarmSensorId,
-                            type
+                            type,
+                            zone
                         )
                     }
                 }
                 ALARM_KEEP_ALIVE -> {
-                    loc?.let { addMarker(it, ALARM_KEEP_ALIVE_STR, sensorItem.alarmSensorId, type) }
+                    loc?.let {
+                        addMarker(
+                            it,
+                            ALARM_KEEP_ALIVE_STR,
+                            sensorItem.alarmSensorId,
+                            type,
+                            zone
+                        )
+                    }
                 }
                 ALARM_LOW_BATTERY -> {
                     loc?.let {
@@ -652,12 +696,21 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                             it,
                             ALARM_LOW_BATTERY_STR,
                             sensorItem.alarmSensorId,
-                            type
+                            type,
+                            zone
                         )
                     }
                 }
                 ALARM_DUAL_TECH -> {
-                    loc?.let { addMarker(it, ALARM_DUAL_TECH_STR, sensorItem.alarmSensorId, type) }
+                    loc?.let {
+                        addMarker(
+                            it,
+                            ALARM_DUAL_TECH_STR,
+                            sensorItem.alarmSensorId,
+                            type,
+                            zone
+                        )
+                    }
                 }
                 ALARM_GATEWAY_DISCONNECTED -> {
                     loc?.let {
@@ -665,13 +718,14 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                             it,
                             ALARM_GATEWAY_DISCONNECTED_STR,
                             sensorItem.alarmSensorId,
-                            type
+                            type,
+                            zone
                         )
                     }
                 }
                 //ALARM_LOW_BATTERY->context?.let { con -> convertBitmapToBitmapDiscriptor(con,R.drawable.ic_alarm_low_battery)}
                 else -> {
-                    loc?.let { addMarker(it, RED_ICON_ID, sensorItem.alarmSensorId, type) }
+                    loc?.let { addMarker(it, RED_ICON_ID, sensorItem.alarmSensorId, type, zone) }
                 }
             }
 
@@ -765,6 +819,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                 myLocate!!,
                 BLUE_ICON_ID,
                 "myLocate",
+                "",
                 ""
             )
         }
@@ -896,7 +951,8 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
         location: LatLng,
         iconId: String,
         cameraName: String?,
-        type: String?
+        type: String?,
+        zone: String
     ): Feature? {
 
         val feature = Feature.fromGeometry(
@@ -910,7 +966,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
         }
         feature.addStringProperty(PROPERTY_NAME_WIN, cameraName)
         feature.addStringProperty(PROPERTY_SENSOR_TYPE, type)
-
+        feature.addStringProperty(PROPERTY_ZONE, zone)
         feature.addStringProperty(ICON_PROPERTY, iconId)
 
         markersList?.add(
@@ -1506,6 +1562,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
     private val PROPERTY_NAME = "name"
     private val PROPERTY_NAME_WIN = "name_win"
     private val PROPERTY_SENSOR_TYPE = "sensor_type"
+    private val PROPERTY_ZONE = "sensor_zone"
 
     private fun handleClickIcon(screenPoint: PointF, point: LatLng): Boolean {
         if (myMapboxMap != null) {
@@ -1513,8 +1570,9 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
             if (features.isNotEmpty()) {
                 val cameraName = features[0].getStringProperty(PROPERTY_NAME_WIN)
                 val sensorType = features[0].getStringProperty(PROPERTY_SENSOR_TYPE)
+                val unit = features[0].getStringProperty(PROPERTY_ZONE)
                 //if(cameraName!=null && cameraName != "") {
-                showPopup(requireActivity(), screenPoint, cameraName, sensorType)
+                showPopup(requireActivity(), screenPoint, cameraName, sensorType, unit)
                 //}
 
                 return true
@@ -1533,7 +1591,8 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
         context: Activity,
         pointF: PointF,
         cameraName: String,
-        sensorType: String
+        sensorType: String,
+        unit: String
     ) {
 
         //when press on icon of current location
@@ -1574,6 +1633,9 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
 
         val tvCameraType = layout.findViewById<TextView>(R.id.tvCameraType)
         tvCameraType.text = sensorType//cameraName
+
+        val tvUnit = layout.findViewById<TextView>(R.id.tvUnit)
+        tvUnit.text = unit
     }
 
     //to dismiss info popup when

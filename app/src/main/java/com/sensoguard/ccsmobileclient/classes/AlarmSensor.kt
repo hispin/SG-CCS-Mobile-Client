@@ -8,7 +8,8 @@ class AlarmSensor(
     var alarmSensorId: String,
     var alarmTime: Calendar,
     var type: String,
-    var isSensorArmed: Boolean
+    var isSensorArmed: Boolean,
+    var zone: String
 ) {
     var marker: Marker? = null
     var markerFeature: Feature? = null

@@ -6,12 +6,12 @@ import com.sensoguard.ccsmobileclient.classes.AlarmSensor
 import java.util.*
 
 //get the alarms from locally
-fun populateAlarmsFromLocally(context: Context): java.util.ArrayList<Alarm>? {
-    val alarms: java.util.ArrayList<Alarm>?
+fun populateAlarmsFromLocally(context: Context): ArrayList<Alarm>? {
+    val alarms: ArrayList<Alarm>?
     val alarmListStr = getStringInPreference(context, ALARM_LIST_KEY_PREF, ERROR_RESP)
 
     alarms = if (alarmListStr.equals(ERROR_RESP)) {
-        java.util.ArrayList()
+        ArrayList()
     } else {
         alarmListStr?.let { convertJsonToAlarmList(it) }
     }
@@ -21,9 +21,9 @@ fun populateAlarmsFromLocally(context: Context): java.util.ArrayList<Alarm>? {
 /**
  * store the detectors to locally
  */
-fun storeAlarmsToLocally(alarms: java.util.ArrayList<Alarm>, context: Context) {
+fun storeAlarmsToLocally(alarms: ArrayList<Alarm>, context: Context) {
     // sort the list of events by date in descending
-    val alarms = java.util.ArrayList(alarms.sortedWith(compareByDescending { it.timeInMillis }))
+    val alarms = ArrayList(alarms.sortedWith(compareByDescending { it.timeInMillis }))
     if (alarms != null && alarms.size > 0) {
         val alarmsJsonStr = convertToAlarmsGson(alarms)
         setStringInPreference(context, ALARM_LIST_KEY_PREF, alarmsJsonStr)
@@ -39,7 +39,9 @@ fun addAlarmToQueue(
     lon: Double,
     type: String,
     isArmed: Boolean,
-    typeIndex: Int
+    typeIndex: Int,
+    zone: String
+
 ) {
     //////////////add alarm to queue
     //prevent duplicate alarm at the same sensor at the same time
@@ -49,7 +51,8 @@ fun addAlarmToQueue(
             alarmId,
             Calendar.getInstance(),
             type,
-            isArmed
+            isArmed,
+            zone
         )
         sensorAlarm.typeIdx = typeIndex
         sensorAlarm.latitude = lat

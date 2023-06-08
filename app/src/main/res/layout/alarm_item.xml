@@ -21,7 +21,7 @@
             android:id="@+id/tvTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintHorizontal_bias="0.753"
+            app:layout_constraintHorizontal_bias="0.98"
 
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -35,7 +35,7 @@
             tool:text="dddd"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginTop="5dp"
-            app:layout_constraintHorizontal_bias="0.353"
+            app:layout_constraintHorizontal_bias="0.02"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tvTime" />
 

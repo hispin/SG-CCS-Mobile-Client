@@ -355,7 +355,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(
                 ctx,
                 NOTIFICATION_CHANNEL_ID)
-                .setContentTitle(title)
+                //.setContentTitle(title)
                 .setContentText(showMsg)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setSmallIcon(android.R.drawable.ic_popup_reminder)
@@ -379,7 +379,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      * @param zone
      */
     private void sendingManage(String alarmId, double lat, double lon, String typeAlarm, boolean isArmed, int typeIdx, String zone, Boolean isNewSystem) {
-        addAlarmToQueue(alarmId, lat, lon, typeAlarm, isArmed, typeIdx);
+        addAlarmToQueue(alarmId, lat, lon, typeAlarm, isArmed, typeIdx, zone);
 
         //add alarm to history
         addAlarmToHistory(alarmId, typeAlarm, lat, lon, zone, isNewSystem);
