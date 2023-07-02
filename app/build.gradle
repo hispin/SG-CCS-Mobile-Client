@@ -19,8 +19,8 @@ android {
         applicationId "com.sensoguard.ccsmobileclient"
         minSdkVersion 24
         targetSdkVersion 33
-        versionCode 23
-        versionName "1.23"
+        versionCode 25
+        versionName "1.25"
         vectorDrawables.useSupportLibrary = true
         //testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -142,5 +142,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging:23.1.2'
     implementation 'com.google.firebase:firebase-analytics:21.2.1'
     implementation 'com.google.firebase:firebase-messaging-directboot:23.1.2'
+
+    implementation "com.google.firebase:firebase-iid:21.1.0"
 
 }
