@@ -140,9 +140,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         if (myIntent != null) {
             createChannelAndHandleNotifications(getApplicationContext());
             parseIntentExtra(myIntent);
-            //sendNotification(myIntent);
-            //start media
-            //startServiceMedia();
             startWorkerMedia();
         }
     }
@@ -170,41 +167,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     //parse intent extra came from server
     private void parseIntentExtra(Intent inn) {
 
-        //String title = inn.getExtras().getString("title");
         String message = inn.getExtras().getString("message", "-1");
-        //String link = inn.getExtras().getString("openURL");
-        //String imagePath = inn.getExtras().getString("image");
-
-
-//        if (title != null)
-//            Timber.d(title);
-//        if (message != null)
-//            Timber.d(message);
-//        if (link != null)
-//            Timber.d(link);
-//        if (imagePath != null)
-//            Timber.d(imagePath);
-
-//        if (isJsonValid(message)) {
-//            try {
-//                JSONObject jObject = new JSONObject(message);
-//                double lat = jObject.getDouble("Latitude");
-//                double lon = jObject.getDouble("Longitude");
-//                //Log.d("testAlarmMap","lat "+lat+" lon "+lon);
-//                String alarmId = jObject.getString("Gateway");
-//                String typeAlarm = jObject.getString("AlarmType");
-//                String zone = jObject.getString("Unit");
-//                //save the index of type for other languages then english
-//                int typeIdx = 0;
-//                if (typeAlarm.equals("Car"))
-//                    typeIdx = 0;
-//                else if (typeAlarm.equals("Footsteps"))
-//                    typeIdx = 1;
-//                sendingManage(alarmId, lat, lon, typeAlarm, true, typeIdx, zone, true);
-//            } catch (JSONException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
 
         if (message.equals("-1")) {
             String title = inn.getExtras().getString("title");
@@ -212,7 +175,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             double lat = Double.parseDouble(inn.getStringExtra("latitude"));
             //double lon = inn.getExtras().getFloat("longitude");
             double lon = Double.parseDouble(inn.getStringExtra("longitude"));
-            Log.d("testAlarmMap", "lat " + lat + " lon " + lon);
+            //Log.d("testAlarmMap", "lat " + lat + " lon " + lon);
             String alarmId = inn.getExtras().getString("gateway");
             String typeAlarm = inn.getExtras().getString("alarmType");
             String zone = inn.getExtras().getString("unit");
@@ -301,12 +264,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                         }
                     }
                 }
-
             }
-
         }
-
-
     }
 
     /**

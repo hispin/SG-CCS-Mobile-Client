@@ -1,9 +1,12 @@
 package com.sensoguard.ccsmobileclient.adapters
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -44,6 +47,7 @@ class AlarmAdapter (private var alarms: ArrayList<Alarm>, val context: Context, 
         private var tvZone: TextView? = null
         private var tvDate: TextView? = null
         private var tvTime: TextView? = null
+        private var ivOpenGoogleMap: ImageView? = null
 
         //TODO press twice
         private var tvType: TextView? = null
@@ -62,7 +66,7 @@ class AlarmAdapter (private var alarms: ArrayList<Alarm>, val context: Context, 
             tvDate = _itemView.findViewById(R.id.tvDate)
             tvType = _itemView.findViewById(R.id.tvType)
             tvTime = _itemView.findViewById(R.id.tvTime)
-
+            ivOpenGoogleMap = _itemView.findViewById(R.id.ivOpenGoogleMap)
 
             if (alarm.isArmed != null
                 && alarm.isArmed!!
@@ -100,6 +104,21 @@ class AlarmAdapter (private var alarms: ArrayList<Alarm>, val context: Context, 
                 }
             }
             tvType?.text = alarm.type
+
+            ivOpenGoogleMap?.setOnClickListener {
+                openGoogleMap(alarm.latitude, alarm.longitude)
+            }
+        }
+
+        /**
+         * open google map to navigation
+         */
+        private fun openGoogleMap(latitude: Double?, longitude: Double?) {
+            val gmmIntentUri =
+                Uri.parse("google.navigation:q=" + latitude + "," + longitude + "&mode=b")
+            val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+            mapIntent.setPackage("com.google.android.apps.maps")
+            context.startActivity(mapIntent)
         }
     }
 }

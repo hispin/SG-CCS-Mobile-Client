@@ -59,8 +59,16 @@
             app:layout_constraintStart_toEndOf="@+id/tvZone"
             app:layout_constraintTop_toTopOf="@+id/tvZone" />
 
-
-
+    <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/ivOpenGoogleMap"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/ic_my_locate"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/tvTime"
+            app:layout_constraintTop_toBottomOf="@+id/tvTime" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
