@@ -115,7 +115,7 @@ class AlarmAdapter (private var alarms: ArrayList<Alarm>, val context: Context, 
          */
         private fun openGoogleMap(latitude: Double?, longitude: Double?) {
             val gmmIntentUri =
-                Uri.parse("google.navigation:q=" + latitude + "," + longitude + "&mode=b")
+                Uri.parse("google.navigation:q=" + latitude + "," + longitude + "&mode=d")
             val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
             mapIntent.setPackage("com.google.android.apps.maps")
             context.startActivity(mapIntent)

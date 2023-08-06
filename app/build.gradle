@@ -19,8 +19,8 @@ android {
         applicationId "com.sensoguard.ccsmobileclient"
         minSdkVersion 24
         targetSdkVersion 33
-        versionCode 25
-        versionName "1.25"
+        versionCode 27
+        versionName "1.27"
         vectorDrawables.useSupportLibrary = true
         //testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -76,6 +76,7 @@ android {
     buildFeatures {
         viewBinding = true
     }
+    namespace 'com.sensoguard.ccsmobileclient'
 
 }
 
