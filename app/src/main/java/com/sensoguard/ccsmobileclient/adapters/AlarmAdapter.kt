@@ -47,6 +47,7 @@ class AlarmAdapter (private var alarms: ArrayList<Alarm>, val context: Context, 
         private var tvZone: TextView? = null
         private var tvDate: TextView? = null
         private var tvTime: TextView? = null
+        private var tvCoordinates: TextView? = null
         private var ivOpenGoogleMap: ImageView? = null
 
         //TODO press twice
@@ -66,6 +67,7 @@ class AlarmAdapter (private var alarms: ArrayList<Alarm>, val context: Context, 
             tvDate = _itemView.findViewById(R.id.tvDate)
             tvType = _itemView.findViewById(R.id.tvType)
             tvTime = _itemView.findViewById(R.id.tvTime)
+            tvCoordinates = _itemView.findViewById(R.id.tvCoordinates)
             ivOpenGoogleMap = _itemView.findViewById(R.id.ivOpenGoogleMap)
 
             if (alarm.isArmed != null
@@ -78,12 +80,14 @@ class AlarmAdapter (private var alarms: ArrayList<Alarm>, val context: Context, 
                 tvHub?.setTextColor(ContextCompat.getColor(context, R.color.red))
                 tvType?.setTextColor(ContextCompat.getColor(context, R.color.red))
                 tvTime?.setTextColor(ContextCompat.getColor(context, R.color.red))
+                tvCoordinates?.setTextColor(ContextCompat.getColor(context, R.color.red))
             } else {
                 tvZone?.setTextColor(ContextCompat.getColor(context, R.color.black))
                 tvDate?.setTextColor(ContextCompat.getColor(context, R.color.black))
                 tvHub?.setTextColor(ContextCompat.getColor(context, R.color.black))
                 tvType?.setTextColor(ContextCompat.getColor(context, R.color.black))
                 tvTime?.setTextColor(ContextCompat.getColor(context, R.color.black))
+                tvCoordinates?.setTextColor(ContextCompat.getColor(context, R.color.black))
             }
 
 
@@ -105,6 +109,9 @@ class AlarmAdapter (private var alarms: ArrayList<Alarm>, val context: Context, 
             }
             tvType?.text = alarm.type
 
+            val tmp = "${alarm.latitude} , ${alarm.longitude}"
+            tvCoordinates?.text = tmp
+
             ivOpenGoogleMap?.setOnClickListener {
                 openGoogleMap(alarm.latitude, alarm.longitude)
             }
@@ -115,7 +122,7 @@ class AlarmAdapter (private var alarms: ArrayList<Alarm>, val context: Context, 
          */
         private fun openGoogleMap(latitude: Double?, longitude: Double?) {
             val gmmIntentUri =
-                Uri.parse("google.navigation:q=" + latitude + "," + longitude + "&mode=d")
+                Uri.parse("google.navigation:q=$latitude,$longitude&mode=d")
             val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
             mapIntent.setPackage("com.google.android.apps.maps")
             context.startActivity(mapIntent)

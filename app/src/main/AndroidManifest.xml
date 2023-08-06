@@ -21,7 +21,9 @@
     <uses-permission
             android:name="android.permission.WRITE_EXTERNAL_STORAGE"
             android:maxSdkVersion="28" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission
+            android:name="android.permission.READ_EXTERNAL_STORAGE"
+            android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.FLASHLIGHT" />
     <!--for android 13-->
@@ -34,6 +36,9 @@
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <uses-feature android:name="android.hardware.usb.host" />
+    <uses-feature
+            android:name="android.hardware.camera"
+            android:required="false" />
     <!--     for google play-->
     <uses-permission
             android:name="com.google.android.gms.permission.AD_ID"
@@ -106,7 +111,7 @@
         <service
                 android:name=".services.MediaService"
                 android:enabled="true"
-                android:exported="true" />
+                android:exported="false" />
         <meta-data
                 android:name="io.fabric.ApiKey"
                 android:value="a2ca8d68e6eb68bf1b812b6e6f088bb62a139961" /> <!-- android:authorities="${applicationId}.contentprovider" -->

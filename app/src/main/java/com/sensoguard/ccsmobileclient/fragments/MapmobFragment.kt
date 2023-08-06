@@ -1,6 +1,10 @@
 package com.sensoguard.ccsmobileclient.fragments
 
-import android.app.*
+import android.app.Activity
+import android.app.Dialog
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -18,7 +22,11 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.Button
+import android.widget.EditText
+import android.widget.PopupWindow
+import android.widget.TextView
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -45,7 +53,16 @@ import com.mapbox.mapboxsdk.plugins.markerview.MarkerViewManager
 import com.mapbox.mapboxsdk.style.expressions.Expression
 import com.mapbox.mapboxsdk.style.expressions.Expression.get
 import com.mapbox.mapboxsdk.style.layers.Property.TEXT_ANCHOR_TOP
-import com.mapbox.mapboxsdk.style.layers.PropertyFactory.*
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconAllowOverlap
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconIgnorePlacement
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory.textAllowOverlap
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory.textField
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory.textHaloColor
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory.textHaloWidth
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory.textIgnorePlacement
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory.textOffset
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory.textVariableAnchor
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.sensoguard.ccsmobileclient.R
@@ -55,7 +72,60 @@ import com.sensoguard.ccsmobileclient.adapters.SensorsDialogAdapter
 import com.sensoguard.ccsmobileclient.classes.AlarmSensor
 import com.sensoguard.ccsmobileclient.classes.Sensor
 import com.sensoguard.ccsmobileclient.controler.ViewModelListener
-import com.sensoguard.ccsmobileclient.global.*
+import com.sensoguard.ccsmobileclient.global.ACTION_TOGGLE_TEST_MODE
+import com.sensoguard.ccsmobileclient.global.ALARM_CAR
+import com.sensoguard.ccsmobileclient.global.ALARM_CAR_STR
+import com.sensoguard.ccsmobileclient.global.ALARM_DIGGING
+import com.sensoguard.ccsmobileclient.global.ALARM_DIGGING_STR
+import com.sensoguard.ccsmobileclient.global.ALARM_DISCONNCTED
+import com.sensoguard.ccsmobileclient.global.ALARM_DISCONNCTED_STR
+import com.sensoguard.ccsmobileclient.global.ALARM_DUAL_TECH
+import com.sensoguard.ccsmobileclient.global.ALARM_DUAL_TECH_STR
+import com.sensoguard.ccsmobileclient.global.ALARM_EXTERNAL
+import com.sensoguard.ccsmobileclient.global.ALARM_EXTERNAL_STR
+import com.sensoguard.ccsmobileclient.global.ALARM_FLICKERING_DURATION_DEFAULT_VALUE_SECONDS
+import com.sensoguard.ccsmobileclient.global.ALARM_FLICKERING_DURATION_KEY
+import com.sensoguard.ccsmobileclient.global.ALARM_FOOTSTEPS
+import com.sensoguard.ccsmobileclient.global.ALARM_FOOTSTEPS_STR
+import com.sensoguard.ccsmobileclient.global.ALARM_GATEWAY_DISCONNECTED
+import com.sensoguard.ccsmobileclient.global.ALARM_GATEWAY_DISCONNECTED_STR
+import com.sensoguard.ccsmobileclient.global.ALARM_KEEP_ALIVE
+import com.sensoguard.ccsmobileclient.global.ALARM_KEEP_ALIVE_STR
+import com.sensoguard.ccsmobileclient.global.ALARM_LOW_BATTERY
+import com.sensoguard.ccsmobileclient.global.ALARM_LOW_BATTERY_STR
+import com.sensoguard.ccsmobileclient.global.ALARM_TYPE_INDEX_KEY
+import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_ID_KEY
+import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_IS_ARMED
+import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_KEY
+import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_NAME_KEY
+import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_TYPE_INDEX_KEY
+import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_TYPE_KEY
+import com.sensoguard.ccsmobileclient.global.CURRENT_ITEM_TOP_MENU_KEY
+import com.sensoguard.ccsmobileclient.global.CURRENT_LATITUDE_PREF
+import com.sensoguard.ccsmobileclient.global.CURRENT_LOCATION
+import com.sensoguard.ccsmobileclient.global.CURRENT_LONGTUDE_PREF
+import com.sensoguard.ccsmobileclient.global.GET_CURRENT_LOCATION_KEY
+import com.sensoguard.ccsmobileclient.global.GET_CURRENT_SINGLE_LOCATION_KEY
+import com.sensoguard.ccsmobileclient.global.IS_SENSOR_NAME_ALWAYS_KEY
+import com.sensoguard.ccsmobileclient.global.LAST_LATITUDE
+import com.sensoguard.ccsmobileclient.global.LAST_LONGETITUDE
+import com.sensoguard.ccsmobileclient.global.MAP_SHOW_NORMAL_VALUE
+import com.sensoguard.ccsmobileclient.global.MAP_SHOW_SATELLITE_VALUE
+import com.sensoguard.ccsmobileclient.global.MAP_SHOW_VIEW_TYPE_KEY
+import com.sensoguard.ccsmobileclient.global.RESET_MARKERS_KEY
+import com.sensoguard.ccsmobileclient.global.STOP_ALARM_SOUND
+import com.sensoguard.ccsmobileclient.global.TABLAYOUT_HEIGHT_DEFAULT
+import com.sensoguard.ccsmobileclient.global.UserSession
+import com.sensoguard.ccsmobileclient.global.addAlarmToQueue
+import com.sensoguard.ccsmobileclient.global.dpToPx
+import com.sensoguard.ccsmobileclient.global.getBooleanInPreference
+import com.sensoguard.ccsmobileclient.global.getDoubleInPreference
+import com.sensoguard.ccsmobileclient.global.getIntInPreference
+import com.sensoguard.ccsmobileclient.global.getLongInPreference
+import com.sensoguard.ccsmobileclient.global.getSensorsFromLocally
+import com.sensoguard.ccsmobileclient.global.getStringInPreference
+import com.sensoguard.ccsmobileclient.global.setStringInPreference
+import com.sensoguard.ccsmobileclient.global.storeSensorsToLocally
 import com.sensoguard.ccsmobileclient.interfaces.OnAdapterListener
 import com.sensoguard.ccsmobileclient.services.MediaService
 import com.sensoguard.ccsmobileclient.services.MyFirebaseMessagingService
@@ -622,7 +692,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
             return null
         }
 
-        val loc: LatLng? =
+        val loc: LatLng =
             LatLng(
                 sensorItem.latitude!!,
                 sensorItem.longitude!!
@@ -968,6 +1038,10 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
         feature.addStringProperty(PROPERTY_SENSOR_TYPE, type)
         feature.addStringProperty(PROPERTY_ZONE, zone)
         feature.addStringProperty(ICON_PROPERTY, iconId)
+        feature.addStringProperty(
+            PROPERTY_COORDINATE,
+            "${location.latitude} , ${location.longitude}"
+        )
 
         markersList?.add(
             feature
@@ -1563,6 +1637,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
     private val PROPERTY_NAME_WIN = "name_win"
     private val PROPERTY_SENSOR_TYPE = "sensor_type"
     private val PROPERTY_ZONE = "sensor_zone"
+    private val PROPERTY_COORDINATE = "sensor_coordinates"
 
     private fun handleClickIcon(screenPoint: PointF, point: LatLng): Boolean {
         if (myMapboxMap != null) {
@@ -1571,8 +1646,9 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                 val cameraName = features[0].getStringProperty(PROPERTY_NAME_WIN)
                 val sensorType = features[0].getStringProperty(PROPERTY_SENSOR_TYPE)
                 val unit = features[0].getStringProperty(PROPERTY_ZONE)
+                val coordinates = features[0].getStringProperty(PROPERTY_COORDINATE)
                 //if(cameraName!=null && cameraName != "") {
-                showPopup(requireActivity(), screenPoint, cameraName, sensorType, unit)
+                showPopup(requireActivity(), screenPoint, cameraName, sensorType, unit, coordinates)
                 //}
 
                 return true
@@ -1592,7 +1668,8 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
         pointF: PointF,
         cameraName: String,
         sensorType: String,
-        unit: String
+        unit: String,
+        coordinates: String
     ) {
 
         //when press on icon of current location
@@ -1636,6 +1713,9 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
 
         val tvUnit = layout.findViewById<TextView>(R.id.tvUnit)
         tvUnit.text = unit
+
+        val tvCoordinates = layout.findViewById<TextView>(R.id.tvCoordinates)
+        tvCoordinates.text = coordinates
     }
 
     //to dismiss info popup when

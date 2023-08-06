@@ -59,6 +59,15 @@
             app:layout_constraintStart_toEndOf="@+id/tvZone"
             app:layout_constraintTop_toTopOf="@+id/tvZone" />
 
+    <TextView
+            android:id="@+id/tvCoordinates"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            app:layout_constraintStart_toStartOf="@+id/tvId"
+            app:layout_constraintTop_toBottomOf="@+id/tvType"
+            tool:text="dddd" />
+
     <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/ivOpenGoogleMap"
             android:layout_width="wrap_content"
