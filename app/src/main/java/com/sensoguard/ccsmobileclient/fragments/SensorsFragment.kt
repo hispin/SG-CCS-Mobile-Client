@@ -3,6 +3,8 @@ package com.sensoguard.ccsmobileclient.fragments
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.*
+import android.content.Context.RECEIVER_NOT_EXPORTED
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -173,10 +175,10 @@ class SensorsFragment : ParentFragment(), OnAdapterListener {
         dialog.setCancelable(false)
         dialog.setContentView(R.layout.dialog_new_sensor)
 
-        val etId = dialog.findViewById(R.id.etId) as EditText
+        val etId: EditText = dialog.findViewById(R.id.etId)
 
 
-        val btnOk = dialog.findViewById(R.id.btnOk) as Button
+        val btnOk: Button = dialog.findViewById(R.id.btnOk)
 
         btnOk.setOnClickListener {
 
@@ -227,7 +229,7 @@ class SensorsFragment : ParentFragment(), OnAdapterListener {
             }
         }
 
-        val btnCancel = dialog.findViewById(R.id.btncn) as Button
+        val btnCancel: Button = dialog.findViewById(R.id.btncn)
         btnCancel.setOnClickListener { dialog.dismiss() }
 
         dialog.show()
@@ -391,7 +393,11 @@ class SensorsFragment : ParentFragment(), OnAdapterListener {
     private fun setFilter() {
         val filter = IntentFilter("handle.read.data")
         //filter.addAction(ACTION_USB_RESPONSE_CACHE)
-        activity?.registerReceiver(usbReceiver, filter)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            activity?.registerReceiver(usbReceiver, filter, RECEIVER_NOT_EXPORTED)
+        } else {
+            activity?.registerReceiver(usbReceiver, filter)
+        }
     }
 
     private val usbReceiver = object : BroadcastReceiver() {

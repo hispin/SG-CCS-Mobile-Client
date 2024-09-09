@@ -13,14 +13,13 @@ repositories {
 }
 
 android {
-    compileSdkVersion 33
-    buildToolsVersion "33.0.1"
+    compileSdkVersion 34
     defaultConfig {
         applicationId "com.sensoguard.ccsmobileclient"
-        minSdkVersion 24
-        targetSdkVersion 33
-        versionCode 28
-        versionName "1.28"
+        minSdkVersion 26
+        targetSdkVersion 34
+        versionCode 29
+        versionName "1.29"
         vectorDrawables.useSupportLibrary = true
         //testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }

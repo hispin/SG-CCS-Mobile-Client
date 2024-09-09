@@ -35,7 +35,32 @@ import com.sensoguard.ccsmobileclient.controler.ViewModelListener
 import com.sensoguard.ccsmobileclient.fragments.AlarmsLogFragment
 import com.sensoguard.ccsmobileclient.fragments.ConfigurationFragment
 import com.sensoguard.ccsmobileclient.fragments.MapmobFragment
-import com.sensoguard.ccsmobileclient.global.*
+import com.sensoguard.ccsmobileclient.global.ALARM_FLICKERING_DURATION_DEFAULT_VALUE_SECONDS
+import com.sensoguard.ccsmobileclient.global.ALARM_FLICKERING_DURATION_KEY
+import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_KEY
+import com.sensoguard.ccsmobileclient.global.CURRENT_ITEM_TOP_MENU_KEY
+import com.sensoguard.ccsmobileclient.global.IS_VIBRATE_WHEN_ALARM_KEY
+import com.sensoguard.ccsmobileclient.global.MAIN_MENU_NUM_ITEM
+import com.sensoguard.ccsmobileclient.global.MAP_SHOW_SATELLITE_VALUE
+import com.sensoguard.ccsmobileclient.global.MAP_SHOW_VIEW_TYPE_KEY
+import com.sensoguard.ccsmobileclient.global.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION
+import com.sensoguard.ccsmobileclient.global.PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE
+import com.sensoguard.ccsmobileclient.global.REGISTER_TOKEN_STATUS
+import com.sensoguard.ccsmobileclient.global.SELECTED_NOTIFICATION_SOUND_KEY
+import com.sensoguard.ccsmobileclient.global.STOP_ALARM_SOUND
+import com.sensoguard.ccsmobileclient.global.TOKEN_REGISTRATION_STATUS_KEY
+import com.sensoguard.ccsmobileclient.global.USB_DEVICES_EMPTY
+import com.sensoguard.ccsmobileclient.global.USB_DEVICES_NOT_EMPTY
+import com.sensoguard.ccsmobileclient.global.USB_DEVICE_CONNECT_STATUS
+import com.sensoguard.ccsmobileclient.global.UserSession
+import com.sensoguard.ccsmobileclient.global.getBooleanInPreference
+import com.sensoguard.ccsmobileclient.global.getIntInPreference
+import com.sensoguard.ccsmobileclient.global.getLongInPreference
+import com.sensoguard.ccsmobileclient.global.getStringInPreference
+import com.sensoguard.ccsmobileclient.global.setAppLanguage
+import com.sensoguard.ccsmobileclient.global.setIntInPreference
+import com.sensoguard.ccsmobileclient.global.setLongInPreference
+import com.sensoguard.ccsmobileclient.global.setStringInPreference
 import com.sensoguard.ccsmobileclient.interfaces.OnFragmentListener
 import com.sensoguard.ccsmobileclient.services.MediaService
 import java.util.*
@@ -227,7 +252,7 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
                 }
                 arg1.action == TOKEN_REGISTRATION_STATUS_KEY -> {
                     //if the token registration status
-                    val isConnected = getBooleanInPreference(context, REGISTER_TOKEN_STATUS, false)
+                    //val isConnected = getBooleanInPreference(context, REGISTER_TOKEN_STATUS, false)
                 }
 
 
@@ -294,7 +319,11 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
         filter.addAction("not_connection")
         filter.addAction("yes_connection")
         filter.addAction(TOKEN_REGISTRATION_STATUS_KEY)
-        registerReceiver(usbReceiver, filter)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(usbReceiver, filter, RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(usbReceiver, filter)
+        }
     }
 
 

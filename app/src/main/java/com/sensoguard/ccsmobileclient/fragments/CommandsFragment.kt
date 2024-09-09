@@ -4,6 +4,7 @@ package com.sensoguard.ccsmobileclient.fragments
 import android.app.Dialog
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Context.RECEIVER_NOT_EXPORTED
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
@@ -369,9 +370,13 @@ class CommandsFragment : DialogFragment() {
         filter.addAction(ACTION_INTERVAL)
         filter.addAction(MAX_TIMER_RESPONSE)
         filter.addAction("test.brod")
-        activity?.registerReceiver(usbReceiver, filter)
-    }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            activity?.registerReceiver(usbReceiver, filter, RECEIVER_NOT_EXPORTED)
+        } else {
+            activity?.registerReceiver(usbReceiver, filter)
+        }
 
+    }
     private val usbReceiver = object : BroadcastReceiver() {
         override fun onReceive(arg0: Context, inn: Intent) {
             if (inn.action == ACTION_USB_RESPONSE_CACHE) {

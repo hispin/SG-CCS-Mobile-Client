@@ -458,7 +458,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private void setFilter() {
         IntentFilter filter = new IntentFilter(TEST_EVENT_MSG_KEY);
-        registerReceiver(receiver, filter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(receiver, filter, RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(receiver, filter);
+        }
     }
 
     //start service media

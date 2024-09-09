@@ -20,7 +20,6 @@ import com.microsoft.windowsazure.messaging.NotificationHub;
 import com.sensoguard.ccsmobileclient.classes.NotificationSettings;
 
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 import timber.log.Timber;
 
@@ -56,11 +55,16 @@ public class RegistrationIntentService extends IntentService {
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful() && task.getResult() != null) {
                             FCM_token = task.getResult();
-                            Log.d("testAlarmMap", "FCM_token " + FCM_token);
-                            Intent inn = new Intent("get.token.notification");
-                            inn.putExtra("token", FCM_token);
-                            sendBroadcast(inn);
-                            Timber.d("FCM Registration Token: %s", FCM_token);
+                            Log.d("testToken", "FCM_token " + FCM_token);
+//                            Intent inn = new Intent("get.token.notification");
+//                            inn.putExtra("token", FCM_token);
+//                            sendBroadcast(inn);
+                            //Timber.d("FCM Registration Token: %s", FCM_token);
+                            setStringInPreference(getApplicationContext(), REGISTRATION_ID_KEY, regID);
+                            setStringInPreference(getApplicationContext(), FCM_TOKEN_KEY, FCM_token);
+                            //update the token registration status
+                            setBooleanInPreference(this, REGISTER_TOKEN_STATUS, true);
+                            //sendBroadcast(new Intent(TOKEN_REGISTRATION_STATUS_KEY));
                         }
                     });
             //get the token from firebase
@@ -76,10 +80,10 @@ public class RegistrationIntentService extends IntentService {
 //            });
 
             //even if it has been failed to e
-            TimeUnit.SECONDS.sleep(1);
+            //TimeUnit.SECONDS.sleep(1);
 
             //check the status of token
-            validationOption();
+            //validationOption();
 
         } catch (Exception e) {
             Timber.e(e, resultString = "Failed to complete registration");

@@ -7,6 +7,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Context.RECEIVER_NOT_EXPORTED
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
@@ -703,10 +704,10 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
         alarmTypeIcon =
             when (typeIdx) {
                 ALARM_CAR -> {
-                    loc?.let { addMarker(it, ALARM_CAR_STR, sensorItem.alarmSensorId, type, zone) }
+                    loc.let { addMarker(it, ALARM_CAR_STR, sensorItem.alarmSensorId, type, zone) }
                 }
                 ALARM_FOOTSTEPS -> {
-                    loc?.let {
+                    loc.let {
                         addMarker(
                             it,
                             ALARM_FOOTSTEPS_STR,
@@ -717,7 +718,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                     }
                 }
                 ALARM_DIGGING -> {
-                    loc?.let {
+                    loc.let {
                         addMarker(
                             it,
                             ALARM_DIGGING_STR,
@@ -728,7 +729,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                     }
                 }
                 ALARM_EXTERNAL -> {
-                    loc?.let {
+                    loc.let {
                         addMarker(
                             it,
                             ALARM_EXTERNAL_STR,
@@ -739,7 +740,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                     }
                 }
                 ALARM_DISCONNCTED -> {
-                    loc?.let {
+                    loc.let {
                         addMarker(
                             it,
                             ALARM_DISCONNCTED_STR,
@@ -750,7 +751,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                     }
                 }
                 ALARM_KEEP_ALIVE -> {
-                    loc?.let {
+                    loc.let {
                         addMarker(
                             it,
                             ALARM_KEEP_ALIVE_STR,
@@ -761,7 +762,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                     }
                 }
                 ALARM_LOW_BATTERY -> {
-                    loc?.let {
+                    loc.let {
                         addMarker(
                             it,
                             ALARM_LOW_BATTERY_STR,
@@ -772,7 +773,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                     }
                 }
                 ALARM_DUAL_TECH -> {
-                    loc?.let {
+                    loc.let {
                         addMarker(
                             it,
                             ALARM_DUAL_TECH_STR,
@@ -783,7 +784,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                     }
                 }
                 ALARM_GATEWAY_DISCONNECTED -> {
-                    loc?.let {
+                    loc.let {
                         addMarker(
                             it,
                             ALARM_GATEWAY_DISCONNECTED_STR,
@@ -795,7 +796,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
                 }
                 //ALARM_LOW_BATTERY->context?.let { con -> convertBitmapToBitmapDiscriptor(con,R.drawable.ic_alarm_low_battery)}
                 else -> {
-                    loc?.let { addMarker(it, RED_ICON_ID, sensorItem.alarmSensorId, type, zone) }
+                    loc.let { addMarker(it, RED_ICON_ID, sensorItem.alarmSensorId, type, zone) }
                 }
             }
 
@@ -1352,7 +1353,11 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
         filter.addAction(GET_CURRENT_SINGLE_LOCATION_KEY)
         filter.addAction(STOP_ALARM_SOUND)
         filter.addAction(ACTION_TOGGLE_TEST_MODE)
-        activity?.registerReceiver(usbReceiver, filter)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            activity?.registerReceiver(usbReceiver, filter, RECEIVER_NOT_EXPORTED)
+        } else {
+            activity?.registerReceiver(usbReceiver, filter)
+        }
     }
 
     override fun onStart() {

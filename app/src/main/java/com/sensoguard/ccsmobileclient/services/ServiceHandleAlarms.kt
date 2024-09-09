@@ -12,7 +12,26 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.sensoguard.ccsmobileclient.R
 import com.sensoguard.ccsmobileclient.classes.EmailService
-import com.sensoguard.ccsmobileclient.global.*
+import com.sensoguard.ccsmobileclient.global.ALARM_TYPE_INDEX_KEY
+import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_ID_KEY
+import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_KEY
+import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_NOT_DEFINED_KEY
+import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_TYPE_KEY
+import com.sensoguard.ccsmobileclient.global.IS_FORWARD_ALARM_EMAIL
+import com.sensoguard.ccsmobileclient.global.IS_SSL_MAIL
+import com.sensoguard.ccsmobileclient.global.PASSWORD_MAIL
+import com.sensoguard.ccsmobileclient.global.PORT_MAIL
+import com.sensoguard.ccsmobileclient.global.READ_DATA_KEY
+import com.sensoguard.ccsmobileclient.global.READ_DATA_KEY_TEST
+import com.sensoguard.ccsmobileclient.global.RECIPIENT_MAIL
+import com.sensoguard.ccsmobileclient.global.SEISMIC_TYPE
+import com.sensoguard.ccsmobileclient.global.SERVER_MAIL
+import com.sensoguard.ccsmobileclient.global.STOP_ALARM_SOUND
+import com.sensoguard.ccsmobileclient.global.USER_NAME_MAIL
+import com.sensoguard.ccsmobileclient.global.getBooleanInPreference
+import com.sensoguard.ccsmobileclient.global.getIntInPreference
+import com.sensoguard.ccsmobileclient.global.getStrDateTimeByMilliSeconds
+import com.sensoguard.ccsmobileclient.global.getStringInPreference
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -55,7 +74,11 @@ class ServiceHandleAlarms : ParentService() {
         filter.addAction(STOP_ALARM_SOUND)
         filter.addAction(CREATE_ALARM_KEY)
         filter.addAction(CREATE_ALARM_NOT_DEFINED_KEY)
-        registerReceiver(usbReceiver, filter)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(usbReceiver, filter, RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(usbReceiver, filter)
+        }
     }
 
     private val usbReceiver = object : BroadcastReceiver() {
