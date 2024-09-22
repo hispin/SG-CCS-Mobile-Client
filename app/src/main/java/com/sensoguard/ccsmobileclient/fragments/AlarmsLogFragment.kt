@@ -3,6 +3,7 @@ package com.sensoguard.ccsmobileclient.fragments
 import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Context.RECEIVER_EXPORTED
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
@@ -13,7 +14,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity.RECEIVER_NOT_EXPORTED
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -209,7 +209,7 @@ class AlarmsLogFragment : ParentFragment(), OnAdapterListener {
     private fun setFilter() {
         val filter = IntentFilter(CREATE_ALARM_KEY)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            activity?.registerReceiver(usbReceiver, filter, RECEIVER_NOT_EXPORTED)
+            activity?.registerReceiver(usbReceiver, filter, RECEIVER_EXPORTED)
         } else {
             activity?.registerReceiver(usbReceiver, filter)
         }

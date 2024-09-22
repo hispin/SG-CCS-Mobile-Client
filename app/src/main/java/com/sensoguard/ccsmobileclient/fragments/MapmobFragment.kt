@@ -7,7 +7,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Context.RECEIVER_NOT_EXPORTED
+import android.content.Context.RECEIVER_EXPORTED
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
@@ -1354,7 +1354,7 @@ class MapmobFragment : ParentFragment(), OnAdapterListener, MapboxMap.OnMoveList
         filter.addAction(STOP_ALARM_SOUND)
         filter.addAction(ACTION_TOGGLE_TEST_MODE)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            activity?.registerReceiver(usbReceiver, filter, RECEIVER_NOT_EXPORTED)
+            activity?.registerReceiver(usbReceiver, filter, RECEIVER_EXPORTED)
         } else {
             activity?.registerReceiver(usbReceiver, filter)
         }
