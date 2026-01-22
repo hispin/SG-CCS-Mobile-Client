@@ -34,7 +34,6 @@ import com.sensoguard.ccsmobileclient.global.getStrDateTimeByMilliSeconds
 import com.sensoguard.ccsmobileclient.global.getStringInPreference
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import java.util.*
 import javax.mail.internet.InternetAddress
 
@@ -83,7 +82,6 @@ class ServiceHandleAlarms : ParentService() {
 
     private val usbReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            Timber.d("accept alarm")
             when (intent.action) {
                 CREATE_ALARM_KEY -> {
                     val alarmSensorId = intent.getStringExtra(CREATE_ALARM_ID_KEY)

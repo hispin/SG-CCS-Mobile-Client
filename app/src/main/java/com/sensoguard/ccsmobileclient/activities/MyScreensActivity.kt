@@ -34,7 +34,7 @@ import com.sensoguard.ccsmobileclient.classes.GeneralItemMenu
 import com.sensoguard.ccsmobileclient.controler.ViewModelListener
 import com.sensoguard.ccsmobileclient.fragments.AlarmsLogFragment
 import com.sensoguard.ccsmobileclient.fragments.ConfigurationFragment
-import com.sensoguard.ccsmobileclient.fragments.MapmobFragment
+import com.sensoguard.ccsmobileclient.fragments.MapmobFragment1
 import com.sensoguard.ccsmobileclient.global.ALARM_FLICKERING_DURATION_DEFAULT_VALUE_SECONDS
 import com.sensoguard.ccsmobileclient.global.ALARM_FLICKERING_DURATION_KEY
 import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_KEY
@@ -517,7 +517,7 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
             //set event of click ic_on top menu
             when (position) {
                 0 -> {
-                    fragment = MapmobFragment()//MapSensorsFragment()//MapmobFragment()
+                    fragment = MapmobFragment1()//MapSensorsFragment()//MapmobFragment()
                     fragment.arguments = Bundle().apply {
                         // Our object is just an integer :-P
                         putInt("ARG_OBJECT", position + 1)

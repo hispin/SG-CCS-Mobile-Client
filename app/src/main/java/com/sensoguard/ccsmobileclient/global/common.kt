@@ -2,11 +2,8 @@ package com.sensoguard.ccsmobileclient.global
 
 import android.app.Activity
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import android.widget.EditText
 import android.widget.Toast
-import com.mapbox.mapboxsdk.Mapbox.getApplicationContext
 import com.sensoguard.ccsmobileclient.R
 
 
@@ -25,20 +22,6 @@ fun ToastNotify(notificationMessage: String?, context: Context) {
     Toast.makeText(context, notificationMessage, Toast.LENGTH_LONG).show()
 }
 
-fun ToastUINotify(notificationMessage: String?) {
-
-    Handler(Looper.getMainLooper()).post({
-        Toast.makeText(
-            getApplicationContext(),
-            notificationMessage,
-            Toast.LENGTH_LONG
-        ).show()
-    })
-
-//    activity.runOnUiThread {
-//        Toast.makeText(activity, notificationMessage, Toast.LENGTH_LONG).show()
-//    }
-}
 
 //check if the field of edit text is empty
 fun validIsEmpty(editText: EditText?, context: Context): Boolean {

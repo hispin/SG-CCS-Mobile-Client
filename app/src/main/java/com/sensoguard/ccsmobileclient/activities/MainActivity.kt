@@ -20,7 +20,6 @@ import com.sensoguard.ccsmobileclient.global.ToastNotify
 import com.sensoguard.ccsmobileclient.services.MyFirebaseMessagingService
 import com.sensoguard.ccsmobileclient.services.RegistrationIntentService
 import com.sensoguard.ccsmobileclient.services.ServiceHandleAlarms
-import timber.log.Timber
 
 //import io.fabric.sdk.android.Fabric
 
@@ -61,7 +60,6 @@ class MainActivity : ParentActivity() {
                 apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
                     ?.show()
             } else {
-                Timber.i("This device is not supported by Google Play Services.")
                 ToastNotify("This device is not supported by Google Play Services.", this)
                 finish()
             }

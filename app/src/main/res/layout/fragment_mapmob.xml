@@ -6,20 +6,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/common_google_signin_btn_text_dark_default"
-        tools:context=".fragments.MapmobFragment">
+        tools:context=".fragments.MapmobFragment1">
 
-    <com.mapbox.mapboxsdk.maps.MapView
+    <com.mapbox.maps.MapView
             android:id="@+id/mapView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             mapbox:mapbox_cameraBearing="0"
             mapbox:mapbox_cameraTargetLat="32.941484"
             mapbox:mapbox_cameraTargetLng="35.795603"
-            mapbox:mapbox_cameraTilt="50.25"
-            mapbox:mapbox_cameraZoom="16"
-            mapbox:mapbox_cameraZoomMax="18"
-            mapbox:mapbox_cameraZoomMin="0"
-            mapbox:mapbox_uiRotateGestures="true" />
+            mapbox:mapbox_cameraZoom="16" />
 
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

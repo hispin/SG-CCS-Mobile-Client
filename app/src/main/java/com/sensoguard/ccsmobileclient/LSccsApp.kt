@@ -11,8 +11,6 @@ import com.sensoguard.ccsmobileclient.global.CURRENT_LANG_KEY_PREF
 import com.sensoguard.ccsmobileclient.global.getAppLanguage
 import com.sensoguard.ccsmobileclient.global.getStringInPreference
 import com.sensoguard.ccsmobileclient.global.setAppLanguage
-import timber.log.Timber
-import timber.log.Timber.DebugTree
 import java.util.*
 
 
@@ -27,7 +25,7 @@ class LSccsApp : Application() {
     override fun onCreate() {
         super.onCreate()
         if (BuildConfig.DEBUG) {
-            Timber.plant(DebugTree())
+            //Timber.plant(DebugTree())
         }
     }
 

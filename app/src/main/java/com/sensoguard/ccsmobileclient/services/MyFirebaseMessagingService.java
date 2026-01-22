@@ -2,22 +2,22 @@ package com.sensoguard.ccsmobileclient.services;
 
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_CAR;
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_CAR_STR;
-import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_DIGGING;
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_DIGGING_STR;
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_DISCONNCTED;
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_DISCONNCTED_STR;
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_DUAL_TECH;
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_DUAL_TECH_STR;
-import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_EXTERNAL;
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_EXTERNAL_STR;
-import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_FOOTSTEPS;
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_FOOTSTEPS_STR;
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_GATEWAY_DISCONNECTED;
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_GATEWAY_DISCONNECTED_STR;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_INTRUDER;
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_KEEP_ALIVE;
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_KEEP_ALIVE_STR;
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_LOW_BATTERY;
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_LOW_BATTERY_STR;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_MOTION;
+import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_SENSOR_OFF;
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.ALARM_TYPE_INDEX_KEY;
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.CREATE_ALARM_ID_KEY;
 import static com.sensoguard.ccsmobileclient.global.ConstsKt.CREATE_ALARM_IS_ARMED;
@@ -65,7 +65,6 @@ import java.util.Calendar;
 import java.util.Locale;
 import java.util.Objects;
 
-import timber.log.Timber;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
     public static final String NOTIFICATION_CHANNEL_ID = "nh-demo-channel-id";
@@ -184,11 +183,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             if (typeAlarm.equals(ALARM_CAR_STR))
                 typeIdx = ALARM_CAR;
             else if (typeAlarm.equals(ALARM_FOOTSTEPS_STR))
-                typeIdx = ALARM_FOOTSTEPS;
+                typeIdx = ALARM_INTRUDER;
             else if (typeAlarm.equals(ALARM_DIGGING_STR))
-                typeIdx = ALARM_DIGGING;
+                typeIdx = ALARM_MOTION;
             else if (typeAlarm.equals(ALARM_EXTERNAL_STR))
-                typeIdx = ALARM_EXTERNAL;
+                typeIdx = ALARM_SENSOR_OFF;
             else if (typeAlarm.equals(ALARM_DISCONNCTED_STR))
                 typeIdx = ALARM_DISCONNCTED;
             else if (typeAlarm.equals(ALARM_KEEP_ALIVE_STR))
@@ -215,7 +214,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                             double lat = Double.parseDouble(latitude);
                             double lon = Double.parseDouble(longtitude);
                             //Log.d("testAlarmMap","lat "+lat+" lon "+lon);
-                            Timber.d("lat=" + lat + " lon=" + lon);
 
                             //save locally for default location
                             setDoubleInPreference(ctx, LAST_LATITUDE, lat);
@@ -239,11 +237,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                             if (typeAlarm.equals(ALARM_CAR_STR))
                                 typeIdx = ALARM_CAR;
                             else if (typeAlarm.equals(ALARM_FOOTSTEPS_STR))
-                                typeIdx = ALARM_FOOTSTEPS;
+                                typeIdx = ALARM_INTRUDER;
                             else if (typeAlarm.equals(ALARM_DIGGING_STR))
-                                typeIdx = ALARM_DIGGING;
+                                typeIdx = ALARM_MOTION;
                             else if (typeAlarm.equals(ALARM_EXTERNAL_STR))
-                                typeIdx = ALARM_EXTERNAL;
+                                typeIdx = ALARM_SENSOR_OFF;
                             else if (typeAlarm.equals(ALARM_DISCONNCTED_STR))
                                 typeIdx = ALARM_DISCONNCTED;
                             else if (typeAlarm.equals(ALARM_KEEP_ALIVE_STR))

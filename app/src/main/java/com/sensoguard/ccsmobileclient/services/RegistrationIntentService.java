@@ -16,7 +16,6 @@ import android.widget.Toast;
 
 import com.google.firebase.messaging.FirebaseMessaging;
 
-import timber.log.Timber;
 
 public class RegistrationIntentService extends IntentService {
 
@@ -53,7 +52,6 @@ public class RegistrationIntentService extends IntentService {
                         }
                     });
         } catch (Exception e) {
-            Timber.e(e, resultString = "Failed to complete registration");
             setError();
             // If an exception happens while fetching the new token or updating registration data
             // on a third-party server, this ensures that we'll attempt the update at a later time.

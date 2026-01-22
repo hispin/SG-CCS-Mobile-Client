@@ -82,9 +82,9 @@ const val ALARM_GATEWAY_DISCONNECTED_STR = "Gateway disconnected"
 
 
 const val ALARM_CAR = 0//"car"
-const val ALARM_FOOTSTEPS = 1//"intruder"
-const val ALARM_DIGGING = 2
-const val ALARM_EXTERNAL = 3//"sensor disconnected"
+const val ALARM_INTRUDER = 1//"intruder"
+const val ALARM_MOTION = 2
+const val ALARM_SENSOR_OFF = 3//"sensor disconnected"
 const val ALARM_DISCONNCTED = 4
 const val ALARM_KEEP_ALIVE = 5
 const val ALARM_LOW_BATTERY = 6
