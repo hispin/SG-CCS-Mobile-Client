@@ -18,6 +18,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
@@ -79,11 +80,7 @@ import com.sensoguard.ccsmobileclient.global.ALARM_LOW_BATTERY
 import com.sensoguard.ccsmobileclient.global.ALARM_LOW_BATTERY_STR
 import com.sensoguard.ccsmobileclient.global.ALARM_MOTION
 import com.sensoguard.ccsmobileclient.global.ALARM_SENSOR_OFF
-import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_ID_KEY
-import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_IS_ARMED
 import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_KEY
-import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_TYPE_INDEX_KEY
-import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_TYPE_KEY
 import com.sensoguard.ccsmobileclient.global.CURRENT_LATITUDE_PREF
 import com.sensoguard.ccsmobileclient.global.CURRENT_LOCATION
 import com.sensoguard.ccsmobileclient.global.CURRENT_LONGTUDE_PREF
@@ -284,6 +281,21 @@ class MapmobFragment1 : ParentFragment(), OnAdapterListener, OnMoveListener {
         mapView = view.findViewById(R.id.mapView)
         //mapView?.onCreate(savedInstanceState)
 
+        mapView?.setOnTouchListener { _, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    // Remove existing popup if any when press outside
+                    viewAnnotationManager?.removeAllViewAnnotations()
+                }
+
+                MotionEvent.ACTION_UP -> {
+
+                }
+            }
+            false
+        }
+
+
 
         fbRefresh = view.findViewById(R.id.fbRefresh1)
         fbRefresh?.setOnClickListener {
@@ -292,7 +304,7 @@ class MapmobFragment1 : ParentFragment(), OnAdapterListener, OnMoveListener {
 
         fbClear = view.findViewById(R.id.fbClear)
         fbClear?.setOnClickListener {
-            //hag clearAlarms()
+            clearAlarms()
         }
 
         fbTest = view.findViewById(R.id.fbTest1)
@@ -303,6 +315,7 @@ class MapmobFragment1 : ParentFragment(), OnAdapterListener, OnMoveListener {
 
         initMapType()
 
+        initializeAnnotation()
 
         return view
     }
@@ -312,6 +325,15 @@ class MapmobFragment1 : ParentFragment(), OnAdapterListener, OnMoveListener {
         setFilter()
         initMapType()
         //mapView?.onStart()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        currentPopup?.let { viewAnnotationManager?.removeViewAnnotation(it) }
+        pointAnnotationManager?.deleteAll()
+        pointAnnotation = null
+        requireActivity().stopService(Intent(context, ServiceFindLocation::class.java))
+        isPaused = true
     }
 
     override fun onDestroy() {
@@ -364,7 +386,6 @@ class MapmobFragment1 : ParentFragment(), OnAdapterListener, OnMoveListener {
             myMapboxMap?.addOnMapLongClickListener { point ->
                 currentLongitude = point.longitude()
                 currentLatitude = point.latitude()
-                //showDialogSensorsList()
                 true
             }
 
@@ -383,6 +404,16 @@ class MapmobFragment1 : ParentFragment(), OnAdapterListener, OnMoveListener {
             gotoMyLocation()
 
         }
+    }
+
+    /**
+     * initialize annotation for markers
+     */
+    private fun initializeAnnotation() {
+        viewAnnotationManager = mapView?.viewAnnotationManager
+        // Create an instance of the Annotation API and get the PointAnnotationManager.
+        annotationApi = mapView?.annotations
+        pointAnnotationManager = annotationApi?.createPointAnnotationManager()
     }
 
     /**
@@ -503,13 +534,9 @@ class MapmobFragment1 : ParentFragment(), OnAdapterListener, OnMoveListener {
             //accept currentAlarm
             if (inn.action == CREATE_ALARM_KEY) {
 
-                val alarmSensorId = inn.getStringExtra(CREATE_ALARM_ID_KEY)
-                val type = inn.getStringExtra(CREATE_ALARM_TYPE_KEY)
-                val typeIdx = inn.getIntExtra(CREATE_ALARM_TYPE_INDEX_KEY, -1)
-                val isArmed = inn.getBooleanExtra(CREATE_ALARM_IS_ARMED, false)
-                Log.d("testAlarmMap", "MapmobFragment:showMarkers")
-
-                showMarkers()
+                if (!isPaused) {
+                    showMarkers()
+                }
 
             } else if (inn.action == GET_CURRENT_SINGLE_LOCATION_KEY) {
                 val location: Location? = inn.getParcelableExtra(CURRENT_LOCATION)
@@ -1027,6 +1054,14 @@ class MapmobFragment1 : ParentFragment(), OnAdapterListener, OnMoveListener {
     }
 
 
+    /**
+     * clear all the alarms
+     */
+    private fun clearAlarms() {
+        UserSession.instance.alarmSensors = ArrayList()
+        //removeMarker()
+        showMarkers()
+    }
 
     override fun saveNameSensor(detector: Sensor) {}
 
