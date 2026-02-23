@@ -101,11 +101,11 @@
                 android:name="com.google.android.geo.API_KEY"
                 android:value="AIzaSyC7lrolhXNPEeiNJuBccG6LgOwGRrBRQos" /> <!-- TODO restrict the api key -->
 
-        <service
-                android:name="com.sensoguard.ccsmobileclient.services.ServiceFindLocation"
-                android:exported="false"
-                android:foregroundServiceType="location"
-                android:permission="android.permission.BIND_JOB_SERVICE" />
+        <!--        <service-->
+        <!--                android:name="com.sensoguard.ccsmobileclient.services.ServiceFindLocation"-->
+        <!--                android:exported="false"-->
+        <!--                android:foregroundServiceType="location"-->
+        <!--                android:permission="android.permission.BIND_JOB_SERVICE" />-->
         <service
                 android:name="com.sensoguard.ccsmobileclient.services.ServiceHandleAlarms"
                 android:exported="false"

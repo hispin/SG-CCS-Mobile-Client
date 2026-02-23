@@ -37,9 +37,15 @@ const val CURRENT_LATITUDE_PREF = "currentLatitudePref"
 const val CURRENT_LONGTUDE_PREF = "currentLongtudePref"
 const val NO_DATA = "-1"
 
+const val SORT_TYPE_KEY = "sortType"
+const val SORT_BY_SYSTEM_KEY = 1
+const val SORT_BY_DATETIME_KEY = 2
+const val SORT_BY_SYSTEM_REQUEST_CODE = "sortBySystem"
+const val SORT_PICK_DATE_TIME_REQUEST_CODE = "sortPickDateTime"
+
 
 const val ALARM_FLICKERING_DURATION_KEY = "alarmFlickeringDuration"
-const val ALARM_FLICKERING_DURATION_DEFAULT_VALUE_SECONDS = 30L
+const val ALARM_FLICKERING_DURATION_DEFAULT_VALUE_SECONDS = 3L
 
 
 const val USB_DEVICES_EMPTY = "usbDevicesEmpty"
@@ -148,6 +154,10 @@ const val NONE_AWAKE = 0
 const val WAIT_AWAKE = 1
 const val OK_AWAKE = 2
 
+const val NO_SORTED = 0
+const val DATE_SORTED = 1
+const val CAMERA_SORTED = 2
+
 const val SEISMIC_TYPE = 0L
 const val PIR_TYPE = 1L
 const val RADAR_TYPE = 2L
@@ -158,3 +168,13 @@ const val FCM_TOKEN_KEY = "FCMtoken"
 
 const val LAST_LATITUDE = "lastLatitude"
 const val LAST_LONGETITUDE = "lastLongetitude"
+
+const val RESULT_CODE = "resultCode"
+const val FROM_CALENDAR = "fromCalendar"
+const val TO_CALENDAR = "toCalendar"
+const val REQUEST_KEY = "requestKey"
+const val CAMERA_KEY = "cameraKey"
+
+const val HOUR_OFFSET = 3
+
+

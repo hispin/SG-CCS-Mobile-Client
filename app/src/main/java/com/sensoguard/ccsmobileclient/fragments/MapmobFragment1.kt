@@ -99,7 +99,6 @@ import com.sensoguard.ccsmobileclient.global.getLongInPreference
 import com.sensoguard.ccsmobileclient.global.getStringInPreference
 import com.sensoguard.ccsmobileclient.global.setStringInPreference
 import com.sensoguard.ccsmobileclient.interfaces.OnAdapterListener
-import com.sensoguard.ccsmobileclient.services.ServiceFindLocation
 import com.sensoguard.ccsmobileclient.services.ServiceFindSingleLocation
 import java.util.*
 
@@ -332,7 +331,7 @@ class MapmobFragment1 : ParentFragment(), OnAdapterListener, OnMoveListener {
         currentPopup?.let { viewAnnotationManager?.removeViewAnnotation(it) }
         pointAnnotationManager?.deleteAll()
         pointAnnotation = null
-        requireActivity().stopService(Intent(context, ServiceFindLocation::class.java))
+        //requireActivity().stopService(Intent(context, ServiceFindLocation::class.java))
         isPaused = true
     }
 
@@ -401,7 +400,8 @@ class MapmobFragment1 : ParentFragment(), OnAdapterListener, OnMoveListener {
 
             showLocation(location)
 
-            gotoMyLocation()
+            gotoMySingleLocation()
+            //gotoMyLocation()
 
         }
     }
@@ -416,16 +416,16 @@ class MapmobFragment1 : ParentFragment(), OnAdapterListener, OnMoveListener {
         pointAnnotationManager = annotationApi?.createPointAnnotationManager()
     }
 
-    /**
-     * get current location from gps
-     */
-    private fun gotoMyLocation() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            activity?.startForegroundService(Intent(context, ServiceFindLocation::class.java))
-        } else {
-            activity?.startService(Intent(context, ServiceFindLocation::class.java))
-        }
-    }
+//    /**
+//     * get current location from gps
+//     */
+//    private fun gotoMyLocation() {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            activity?.startForegroundService(Intent(context, ServiceFindLocation::class.java))
+//        } else {
+//            activity?.startService(Intent(context, ServiceFindLocation::class.java))
+//        }
+//    }
 
     private fun setMyLocate(myLocate: LatLng) {
         this.myLocate = myLocate

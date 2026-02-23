@@ -60,6 +60,19 @@ class AlarmAdapter (private var alarms: ArrayList<Alarm>, val context: Context, 
             }
         }
 
+        init {
+            itemView.setOnLongClickListener {
+
+                //toggle the status of ready to delete
+                alarms[adapterPosition].isReadyToDelete = !alarms[adapterPosition].isReadyToDelete
+                notifyItemChanged(adapterPosition, alarms[adapterPosition])
+
+                return@setOnLongClickListener false
+
+            }
+
+        }
+
 
         fun bindReservation(alarm: Alarm) {
             tvHub = _itemView.findViewById(R.id.tvId)
@@ -114,6 +127,13 @@ class AlarmAdapter (private var alarms: ArrayList<Alarm>, val context: Context, 
 
             ivOpenGoogleMap?.setOnClickListener {
                 openGoogleMap(alarm.latitude, alarm.longitude)
+            }
+
+            //set selected/unselected
+            if (alarm.isReadyToDelete) {
+                itemView.alpha = 0.5F
+            } else {
+                itemView.alpha = 1.0F
             }
         }
 

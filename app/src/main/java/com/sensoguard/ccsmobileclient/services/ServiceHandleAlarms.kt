@@ -58,7 +58,7 @@ class ServiceHandleAlarms : ParentService() {
         super.onStartCommand(intent, flags, startId)
         //FusedLocationProviderClient is for interacting with the location using fused location
         setFilter()
-
+        startSysForeGround()
         return START_NOT_STICKY
     }
 

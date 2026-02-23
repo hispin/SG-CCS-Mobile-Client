@@ -14,4 +14,5 @@ class Alarm(
     var latitude: Double?=null
     var isLocallyDefined:Boolean=false
     var isActive:Boolean?=false
+    var isReadyToDelete: Boolean = false
 }

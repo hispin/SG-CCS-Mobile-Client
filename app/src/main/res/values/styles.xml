@@ -11,7 +11,10 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="windowActionBar">false</item>
     </style>
+
+    <style name="DateTimeDialog" parent="Theme.AppCompat.Dialog" />
 
     <style name="zone_title" parent="marquee">
         <item name="android:textColor">@color/black</item>
