@@ -308,7 +308,7 @@ class SystemSortDialogFragment : DialogFragment(),
 
         while (iteratorList != null && iteratorList.hasNext()) {
             val item = iteratorList.next()
-            item.name?.let { tmp?.add(it) }
+            item.zone.let { tmp?.add(it) }
         }
         //prevent duplicate
         myAlarmsName = ArrayList(LinkedHashSet<String>(tmp))

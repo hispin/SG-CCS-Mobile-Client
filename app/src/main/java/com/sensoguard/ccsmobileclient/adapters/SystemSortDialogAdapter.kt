@@ -74,7 +74,7 @@ class SystemSortDialogAdapter(
 
 
             //tvId?.text = systemSort.getId()
-            tvName?.text = systemSort.cameraName
+            tvName?.text = systemSort.unit
 
         }
     }

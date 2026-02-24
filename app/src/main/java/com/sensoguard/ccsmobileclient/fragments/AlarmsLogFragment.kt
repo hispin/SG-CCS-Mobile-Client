@@ -35,7 +35,6 @@ import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_KEY
 import com.sensoguard.ccsmobileclient.global.DATE_SORTED
 import com.sensoguard.ccsmobileclient.global.ERROR_RESP
 import com.sensoguard.ccsmobileclient.global.FROM_CALENDAR
-import com.sensoguard.ccsmobileclient.global.HOUR_OFFSET
 import com.sensoguard.ccsmobileclient.global.NO_SORTED
 import com.sensoguard.ccsmobileclient.global.RESULT_CODE
 import com.sensoguard.ccsmobileclient.global.SORT_BY_DATETIME_KEY
@@ -294,12 +293,106 @@ class AlarmsLogFragment : ParentFragment(), OnAdapterListener {
     private fun refreshAlarmsFromPref() {
         myAlarms = ArrayList()
 
-        val _alarms = populateAlarmsFromLocally()
-        _alarms?.let { myAlarms?.addAll(it) }
+        myAlarms = populateAlarmsFromLocally()
 
-        alarmAdapter?.setDetects(myAlarms)
-        alarmAdapter?.notifyDataSetChanged()
+        //for testing *************
+//        var tmp = Alarm()
+//        tmp.imgsPath="https://www.sciencemag.org/sites/default/files/styles/article_main_large/public/butterfly_16x9_0.jpg"
+//        tmp.id="6FF8EF7E-7625-419E-ADC8-23EA4778994C"
+//        tmp.timeInMillis=1595849670712
+//        myAlarms?.add(tmp)
+//        *************************
+
+        //show only alarm log from email
+//        val iteratorList = _alarms?.listIterator()
+//        while (iteratorList != null && iteratorList.hasNext()) {
+//            val item = iteratorList.next()
+//            if (item.isCameFromEmail) {
+//                myAlarms?.add(item)
+//            }
+//        }
+
+        myAlarms?.let { myAlarms ->
+            this.myAlarms = ArrayList(myAlarms.sortedWith(compareByDescending { it.timeInMillis }))
+            //myAlarms?.let { alarms?.addAll(it) }
+
+            when (typeOfSorted) {
+                DATE_SORTED -> {
+                    sortByDateAlarm()
+                    alarmAdapter?.setDetects(mySortedAlarms)
+                    alarmAdapter?.notifyDataSetChanged()
+                }
+
+                CAMERA_SORTED -> {
+                    sortByCamerasAlarm()
+                    alarmAdapter?.setDetects(mySortedAlarms)
+                    alarmAdapter?.notifyDataSetChanged()
+                }
+
+                else -> {
+                    alarmAdapter?.setDetects(this.myAlarms)
+                    alarmAdapter?.notifyDataSetChanged()
+                }
+            }
+        }
+
     }
+
+    //sort the alarm by date time
+    private fun sortByDateAlarm() {
+        if (toCalendar == null || fromCalendar == null) {
+            return
+        }
+        mySortedAlarms = ArrayList()
+        val iteratorList = myAlarms?.listIterator()
+        while (iteratorList != null && iteratorList.hasNext()) {
+            val item = iteratorList.next()
+            if (item.timeInMillis != null
+                && item.timeInMillis!! <= toCalendar!!.timeInMillis
+                && item.timeInMillis!! >= fromCalendar!!.timeInMillis
+            )
+                mySortedAlarms?.add(item)
+        }
+    }
+
+    //sort the alarm by sorter camera
+    private fun sortByCamerasAlarm() {
+        if (mySortedCameras == null) {
+            return
+        }
+
+        mySortedAlarms = ArrayList()
+        val iteratorList = myAlarms?.listIterator()
+        while (iteratorList != null && iteratorList.hasNext()) {
+            val item = iteratorList.next()
+            if (isAlarmSorted(item, mySortedCameras))
+                mySortedAlarms?.add(item)
+        }
+    }
+
+
+    //check if the the alarm is sorted
+    private fun isAlarmSorted(itemP: Alarm, mySystemSort: ArrayList<SystemSort>?): Boolean {
+
+        val iteratorList = mySystemSort?.listIterator()
+        while (iteratorList != null && iteratorList.hasNext()) {
+            val item = iteratorList.next()
+            if (itemP.zone.equals(item.unit) && item.isSorted != null && item.isSorted!!) {
+                return true
+            }
+        }
+        return false
+    }
+
+//    private fun refreshAlarmsFromPref() {
+//        myAlarms = ArrayList()
+//
+//        val _alarms = populateAlarmsFromLocally()
+//        _alarms?.let { myAlarms?.addAll(it) }
+//
+//        alarmAdapter?.setDetects(myAlarms)
+//        alarmAdapter?.notifyDataSetChanged()
+//    }
 
     //get the alarms from locally
     private fun populateAlarmsFromLocally(): ArrayList<Alarm>? {
@@ -441,14 +534,19 @@ class AlarmsLogFragment : ParentFragment(), OnAdapterListener {
                         } else {
                             bundle.getSerializable(FROM_CALENDAR) as Calendar
                         }
-                        fromCalendar?.add(Calendar.HOUR, HOUR_OFFSET)//to sort UTC
+
+                        //convert to UTS set +3 to hours
+                        //fromCalendar?.add(Calendar.HOUR, HOUR_OFFSET)//to sort UTC
+
                         toCalendar = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             bundle.getSerializable(TO_CALENDAR, Calendar::class.java)
                         } else {
                             bundle.getSerializable(TO_CALENDAR) as Calendar
                         }
-                        toCalendar?.add(Calendar.HOUR, HOUR_OFFSET)//to sort UTC
-                        //toCalendar?.timeZone=TimeZone.getTimeZone("GMT+3")
+
+                        //convert to UTS set +3 to hours
+                        //toCalendar?.add(Calendar.HOUR, HOUR_OFFSET)//to sort UTC
+
                         if (fromCalendar != null && toCalendar != null) {
                             typeOfSorted = DATE_SORTED
                             refreshAlarmsFromPref()

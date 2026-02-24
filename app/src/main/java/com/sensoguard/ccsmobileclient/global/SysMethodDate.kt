@@ -8,8 +8,9 @@ import java.util.*
 fun getStringFromCalendar(calendar: Calendar,format:String,context: Context):String{
     val locale=if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) context.resources.configuration.locales.getFirstMatch(context.resources.assets.locales)
     else context.resources.configuration.locale
-    val dateFormat= SimpleDateFormat("kk:mm dd/MM/yy", locale)//"kk:mm dd/MM/yy"
-    val dateString=dateFormat.format(Calendar.getInstance().time)
+    val dateFormat = SimpleDateFormat(format, locale)//"kk:mm dd/MM/yy"
+    //dateFormat.timeZone = TimeZone.getTimeZone("UTC")
+    val dateString = dateFormat.format(calendar.time)
     return dateString
 }
 
