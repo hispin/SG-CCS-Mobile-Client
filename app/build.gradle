@@ -18,8 +18,8 @@ android {
         applicationId "com.sensoguard.ccsmobileclient"
         minSdkVersion 26
         targetSdkVersion 36
-        versionCode 36
-        versionName "1.36"
+        versionCode 37
+        versionName "1.37"
         vectorDrawables.useSupportLibrary = true
         //testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }

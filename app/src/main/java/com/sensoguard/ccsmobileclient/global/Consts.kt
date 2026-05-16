@@ -177,4 +177,6 @@ const val CAMERA_KEY = "cameraKey"
 
 const val HOUR_OFFSET = 3
 
+const val TEST_CODE = "MIN4yuy1KQ367Eu/Ui5CyUFdgNFyRT4wnebpc241EH0="
+
 
