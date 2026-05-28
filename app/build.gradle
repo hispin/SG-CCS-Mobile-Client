@@ -1,12 +1,16 @@
-apply plugin: 'com.android.application'
-
-apply plugin: 'kotlin-android'
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    //id 'com.android.application'
+    //id 'org.jetbrains.kotlin.android' version '2.3.21' apply false
+    //alias(libs.plugins.android.application)
+    //alias(libs.plugins.kotlin.android)
+//    id 'com.google.gms.google-services'
+    //kotlin("plugin.serialization") version "1.9.0"
+}
 
 //apply plugin: 'kotlin-android-extensions'
-
 //apply plugin: 'io.fabric'
-
-apply plugin: 'com.google.gms.google-services'
 
 repositories {
     maven { url 'https://maven.fabric.io/public' }
@@ -18,8 +22,8 @@ android {
         applicationId "com.sensoguard.ccsmobileclient"
         minSdkVersion 26
         targetSdkVersion 36
-        versionCode 37
-        versionName "1.37"
+        versionCode 38
+        versionName "1.38"
         vectorDrawables.useSupportLibrary = true
         //testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -57,7 +61,7 @@ android {
         debug {
             ext.alwaysUpdateBuildId = false
 //            //ext.enableCrashlytics = false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
             //buildConfigField "Boolean", "REPORT_CRASH", 'false'
             debuggable true
@@ -73,11 +77,11 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = "17"
     }
     buildFeatures {
         viewBinding = true
@@ -95,14 +99,16 @@ configurations {
 
 dependencies {
     //implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    // Redundant stdlib removed as it's added automatically by the Kotlin plugin
+
     implementation 'com.android.support:appcompat-v7:33.1.1'
     implementation 'com.android.support.constraint:constraint-layout:2.0.4'
     implementation 'com.android.support:support-v4:33.0.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.9.7'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.9.7'
-    implementation 'androidx.work:work-runtime-ktx:2.11.1'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.9.8'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.9.8'
+    implementation 'androidx.work:work-runtime-ktx:2.11.2'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
@@ -110,9 +116,9 @@ dependencies {
     implementation 'com.google.android.gms:play-services-maps:20.0.0'
     implementation 'com.github.kai-morich:usb-serial-for-android:1.7.0'
     implementation 'com.android.support:design:33.0.0'
-    implementation 'com.google.code.gson:gson:2.13.2'
+    implementation 'com.google.code.gson:gson:2.14.0'
     implementation 'com.google.android.gms:play-services-location:21.3.0'
-    implementation 'com.google.android.material:material:1.13.0'
+    implementation 'com.google.android.material:material:1.14.0'
     implementation 'com.opencsv:opencsv:5.12.0'
 
     implementation 'com.github.felHR85:UsbSerial:6.0.6'
@@ -125,8 +131,8 @@ dependencies {
     implementation 'com.github.delight-im:Android-Languages:v1.0.1'
 
 
-    implementation 'com.github.bumptech.glide:glide:5.0.5'
-    annotationProcessor 'com.github.bumptech.glide:compiler:5.0.5'
+    implementation 'com.github.bumptech.glide:glide:5.0.7'
+    annotationProcessor 'com.github.bumptech.glide:compiler:5.0.7'
 
     //map box
 //    implementation 'com.mapbox.mapboxsdk:mapbox-android-sdk:9.5.0'
@@ -141,17 +147,17 @@ dependencies {
 
     //email sending
     implementation 'com.sun.mail:android-mail:1.6.8'
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0"
 
 
     implementation 'com.microsoft.azure:notification-hubs-android-sdk:2.0.0@aar'
-    implementation 'androidx.core:core-ktx:1.17.0'
+    implementation 'androidx.core:core-ktx:1.18.0'
 
     //firebase
     implementation 'com.google.firebase:firebase-core:21.1.1'
-    implementation 'com.google.firebase:firebase-messaging:25.0.1'
-    implementation 'com.google.firebase:firebase-analytics:23.0.0'
-    implementation 'com.google.firebase:firebase-messaging-directboot:25.0.1'
+    implementation 'com.google.firebase:firebase-messaging:25.0.2'
+    implementation 'com.google.firebase:firebase-analytics:23.2.0'
+    implementation 'com.google.firebase:firebase-messaging-directboot:25.0.2'
 
     implementation "com.google.firebase:firebase-iid:21.1.0"
 

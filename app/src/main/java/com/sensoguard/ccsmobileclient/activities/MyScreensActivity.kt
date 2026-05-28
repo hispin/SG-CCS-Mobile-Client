@@ -34,7 +34,7 @@ import com.sensoguard.ccsmobileclient.classes.GeneralItemMenu
 import com.sensoguard.ccsmobileclient.controler.ViewModelListener
 import com.sensoguard.ccsmobileclient.fragments.AlarmsLogFragment
 import com.sensoguard.ccsmobileclient.fragments.ConfigurationFragment
-import com.sensoguard.ccsmobileclient.fragments.MapmobFragment1
+import com.sensoguard.ccsmobileclient.fragments.MapmobFragment
 import com.sensoguard.ccsmobileclient.global.ALARM_FLICKERING_DURATION_DEFAULT_VALUE_SECONDS
 import com.sensoguard.ccsmobileclient.global.ALARM_FLICKERING_DURATION_KEY
 import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_KEY
@@ -112,7 +112,11 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
                     || isAllSensorAlarmTimeOutSound()
                 ) {
                     ViewModelProviders.of(this).get(ViewModelListener::class.java).shutDownTimer()
-                    sendBroadcast(Intent(STOP_ALARM_SOUND))
+                    sendBroadcast(
+                        Intent(STOP_ALARM_SOUND).setPackage(/* TODO: provide the application ID. For example: */
+                            packageName
+                        )
+                    )
                 }
 
             })
@@ -282,7 +286,7 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
                 getBooleanInPreference(applicationContext, IS_VIBRATE_WHEN_ALARM_KEY, true)
             if (isVibrateWhenAlarm) {
                 // Get instance of Vibrator from current Context
-                val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                val vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator
 
                 // Vibrate for 200 milliseconds
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -322,7 +326,12 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(usbReceiver, filter, RECEIVER_NOT_EXPORTED)
         } else {
-            registerReceiver(usbReceiver, filter)
+            ContextCompat.registerReceiver(
+                this,
+                usbReceiver,
+                filter,
+                ContextCompat.RECEIVER_NOT_EXPORTED
+            )
         }
     }
 
@@ -351,7 +360,7 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
         )
 
         //if the token registration status
-        val isConnected = getBooleanInPreference(this, REGISTER_TOKEN_STATUS, false)
+        getBooleanInPreference(this, REGISTER_TOKEN_STATUS, false)
     }
 
     //start connection service
@@ -517,7 +526,7 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
             //set event of click ic_on top menu
             when (position) {
                 0 -> {
-                    fragment = MapmobFragment1()//MapSensorsFragment()//MapmobFragment()
+                    fragment = MapmobFragment()//MapSensorsFragment()//MapmobFragment()
                     fragment.arguments = Bundle().apply {
                         // Our object is just an integer :-P
                         putInt("ARG_OBJECT", position + 1)
@@ -567,7 +576,11 @@ class MyScreensActivity : ParentActivity(), OnFragmentListener, Observer {
 
         } else {//normal
             super.onBackPressed()
-            sendBroadcast(Intent(STOP_ALARM_SOUND))
+            sendBroadcast(
+                Intent(STOP_ALARM_SOUND).setPackage(/* TODO: provide the application ID. For example: */
+                    packageName
+                )
+            )
             //start activity for loading new language if it has been changed
             startActivity(Intent(this, MainActivity::class.java))
         }
