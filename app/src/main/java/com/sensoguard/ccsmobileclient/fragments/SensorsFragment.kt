@@ -2,15 +2,23 @@ package com.sensoguard.ccsmobileclient.fragments
 
 import android.app.AlertDialog
 import android.app.Dialog
-import android.content.*
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Context.RECEIVER_NOT_EXPORTED
+import android.content.Intent
+import android.content.IntentFilter
+import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
-import android.widget.*
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.appcompat.widget.AppCompatSpinner
@@ -22,7 +30,16 @@ import androidx.recyclerview.widget.RecyclerView
 import com.sensoguard.ccsmobileclient.R
 import com.sensoguard.ccsmobileclient.adapters.SensorsAdapter
 import com.sensoguard.ccsmobileclient.classes.Sensor
-import com.sensoguard.ccsmobileclient.global.*
+import com.sensoguard.ccsmobileclient.global.DETECTORS_LIST_KEY_PREF
+import com.sensoguard.ccsmobileclient.global.ERROR_RESP
+import com.sensoguard.ccsmobileclient.global.SENSORS_IDS
+import com.sensoguard.ccsmobileclient.global.SHARED_PREF_FILE_NAME
+import com.sensoguard.ccsmobileclient.global.STOP_TIMER
+import com.sensoguard.ccsmobileclient.global.USB_DEVICE_CONNECT_STATUS
+import com.sensoguard.ccsmobileclient.global.convertJsonToSensorList
+import com.sensoguard.ccsmobileclient.global.getBooleanInPreference
+import com.sensoguard.ccsmobileclient.global.getStringInPreference
+import com.sensoguard.ccsmobileclient.global.storeSensorsToLocally
 import com.sensoguard.ccsmobileclient.interfaces.OnAdapterListener
 import com.sensoguard.ccsmobileclient.interfaces.OnFragmentListener
 
@@ -327,7 +344,7 @@ class SensorsFragment : ParentFragment(), OnAdapterListener {
 
         ibSendCommand = view.findViewById(R.id.ibSendCommand)
         ibSendCommand?.setOnClickListener {
-            val isConnected = getBooleanInPreference(activity, USB_DEVICE_CONNECT_STATUS, false)
+            getBooleanInPreference(activity, USB_DEVICE_CONNECT_STATUS, false)
             //if the usb is connected then open dialog of commands
             //if (isConnected) {
             openCommands()
@@ -396,7 +413,12 @@ class SensorsFragment : ParentFragment(), OnAdapterListener {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             activity?.registerReceiver(usbReceiver, filter, RECEIVER_NOT_EXPORTED)
         } else {
-            activity?.registerReceiver(usbReceiver, filter)
+            ContextCompat.registerReceiver(
+                requireActivity(),
+                usbReceiver,
+                filter,
+                ContextCompat.RECEIVER_NOT_EXPORTED
+            )
         }
     }
 

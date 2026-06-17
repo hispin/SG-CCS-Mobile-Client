@@ -459,7 +459,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(receiver, filter, RECEIVER_NOT_EXPORTED);
         } else {
-            registerReceiver(receiver, filter);
+            ContextCompat.registerReceiver(
+                    this,
+                    receiver,
+                    filter,
+                    ContextCompat.RECEIVER_NOT_EXPORTED
+            );
         }
     }
 

@@ -451,7 +451,12 @@ class AlarmsLogFragment : ParentFragment(), OnAdapterListener {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             activity?.registerReceiver(usbReceiver, filter, RECEIVER_EXPORTED)
         } else {
-            activity?.registerReceiver(usbReceiver, filter)
+            ContextCompat.registerReceiver(
+                requireActivity(),
+                usbReceiver,
+                filter,
+                ContextCompat.RECEIVER_NOT_EXPORTED
+            )
         }
     }
 
@@ -551,14 +556,14 @@ class AlarmsLogFragment : ParentFragment(), OnAdapterListener {
                             typeOfSorted = DATE_SORTED
                             refreshAlarmsFromPref()
                         }
-                        val fromDateStr = activity?.let { it1 ->
+                        activity?.let { it1 ->
                             getStringFromCalendar(
                                 fromCalendar!!,
                                 "dd/MM/yy kk:mm:ss",
                                 it1
                             )
                         }
-                        val toDateStr = activity?.let { it1 ->
+                        activity?.let { it1 ->
                             getStringFromCalendar(
                                 toCalendar!!,
                                 "dd/MM/yy kk:mm:ss",

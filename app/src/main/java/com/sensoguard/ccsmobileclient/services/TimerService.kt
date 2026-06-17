@@ -9,8 +9,15 @@ import android.content.IntentFilter
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.sensoguard.ccsmobileclient.R
-import com.sensoguard.ccsmobileclient.global.*
+import com.sensoguard.ccsmobileclient.global.ACTION_INTERVAL
+import com.sensoguard.ccsmobileclient.global.COMMAND_TYPE
+import com.sensoguard.ccsmobileclient.global.IS_REPEATED
+import com.sensoguard.ccsmobileclient.global.MAX_TIMEOUT
+import com.sensoguard.ccsmobileclient.global.MAX_TIMER_RESPONSE
+import com.sensoguard.ccsmobileclient.global.STOP_TIMER
+import com.sensoguard.ccsmobileclient.global.TIMER_VALUE
 import java.util.*
 
 class TimerService : ParentService() {
@@ -113,7 +120,16 @@ class TimerService : ParentService() {
     private fun setFilter() {
         val filter = IntentFilter(STOP_TIMER)
         filter.addAction(STOP_TIMER)
-        registerReceiver(usbReceiver, filter)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(usbReceiver, filter, RECEIVER_NOT_EXPORTED)
+        } else {
+            ContextCompat.registerReceiver(
+                this,
+                usbReceiver,
+                filter,
+                ContextCompat.RECEIVER_NOT_EXPORTED
+            )
+        }
     }
 
     private val usbReceiver = object : BroadcastReceiver() {
@@ -143,7 +159,7 @@ class TimerService : ParentService() {
                 NotificationManager.IMPORTANCE_DEFAULT
             )
 
-            val `object` = getSystemService(Context.NOTIFICATION_SERVICE)
+            val `object` = getSystemService(NOTIFICATION_SERVICE)
             if (`object` != null && `object` is NotificationManager) {
                 `object`.createNotificationChannel(channel)
             }

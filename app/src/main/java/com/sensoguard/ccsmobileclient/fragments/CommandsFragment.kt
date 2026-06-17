@@ -19,6 +19,7 @@ import android.widget.Button
 import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatSpinner
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -27,9 +28,36 @@ import com.sensoguard.ccsmobileclient.R
 import com.sensoguard.ccsmobileclient.adapters.CommandAdapter
 import com.sensoguard.ccsmobileclient.classes.Command
 import com.sensoguard.ccsmobileclient.classes.Sensor
-import com.sensoguard.ccsmobileclient.global.*
+import com.sensoguard.ccsmobileclient.global.ACTION_INTERVAL
+import com.sensoguard.ccsmobileclient.global.ACTION_SEND_CMD
+import com.sensoguard.ccsmobileclient.global.ACTION_USB_RESPONSE_CACHE
+import com.sensoguard.ccsmobileclient.global.COMMAND_TYPE
+import com.sensoguard.ccsmobileclient.global.DETECTORS_LIST_KEY_PREF
+import com.sensoguard.ccsmobileclient.global.ERROR_RESP
+import com.sensoguard.ccsmobileclient.global.GET_SENS_LEVEL
+import com.sensoguard.ccsmobileclient.global.IS_REPEATED
+import com.sensoguard.ccsmobileclient.global.MAX_TIMEOUT
+import com.sensoguard.ccsmobileclient.global.MAX_TIMER_RESPONSE
+import com.sensoguard.ccsmobileclient.global.NONE_AWAKE
+import com.sensoguard.ccsmobileclient.global.OK_AWAKE
+import com.sensoguard.ccsmobileclient.global.PROCESS_STATE
+import com.sensoguard.ccsmobileclient.global.SEISMIC_TYPE
+import com.sensoguard.ccsmobileclient.global.SENSORS_IDS
+import com.sensoguard.ccsmobileclient.global.SET_RF_ON_TIMER
+import com.sensoguard.ccsmobileclient.global.SET_SENS_LEVEL
+import com.sensoguard.ccsmobileclient.global.STOP_TIMER
+import com.sensoguard.ccsmobileclient.global.SUCCESS_STATE
+import com.sensoguard.ccsmobileclient.global.TIMEOUT_STATE
+import com.sensoguard.ccsmobileclient.global.TIMER_VALUE
+import com.sensoguard.ccsmobileclient.global.USB_CACHE_RESPONSE_KEY
+import com.sensoguard.ccsmobileclient.global.USB_DEVICE_CONNECT_STATUS
+import com.sensoguard.ccsmobileclient.global.UserSession
+import com.sensoguard.ccsmobileclient.global.WAIT_AWAKE
+import com.sensoguard.ccsmobileclient.global.convertJsonToSensorList
+import com.sensoguard.ccsmobileclient.global.getBooleanInPreference
+import com.sensoguard.ccsmobileclient.global.getStringInPreference
+import com.sensoguard.ccsmobileclient.global.showToast
 import com.sensoguard.ccsmobileclient.services.TimerService
-import java.util.*
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -373,7 +401,12 @@ class CommandsFragment : DialogFragment() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             activity?.registerReceiver(usbReceiver, filter, RECEIVER_NOT_EXPORTED)
         } else {
-            activity?.registerReceiver(usbReceiver, filter)
+            ContextCompat.registerReceiver(
+                requireActivity(),
+                usbReceiver,
+                filter,
+                ContextCompat.RECEIVER_NOT_EXPORTED
+            )
         }
 
     }

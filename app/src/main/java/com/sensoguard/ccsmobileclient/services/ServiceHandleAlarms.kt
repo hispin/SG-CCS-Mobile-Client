@@ -10,6 +10,7 @@ import android.media.Ringtone
 import android.os.Build
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.sensoguard.ccsmobileclient.R
 import com.sensoguard.ccsmobileclient.classes.EmailService
 import com.sensoguard.ccsmobileclient.global.ALARM_TYPE_INDEX_KEY
@@ -76,7 +77,12 @@ class ServiceHandleAlarms : ParentService() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(usbReceiver, filter, RECEIVER_NOT_EXPORTED)
         } else {
-            registerReceiver(usbReceiver, filter)
+            ContextCompat.registerReceiver(
+                this,
+                usbReceiver,
+                filter,
+                ContextCompat.RECEIVER_NOT_EXPORTED
+            )
         }
     }
 
@@ -221,7 +227,7 @@ class ServiceHandleAlarms : ParentService() {
                 NotificationManager.IMPORTANCE_DEFAULT
             )
 
-            val `object` = getSystemService(Context.NOTIFICATION_SERVICE)
+            val `object` = getSystemService(NOTIFICATION_SERVICE)
             if (`object` != null && `object` is NotificationManager) {
                 `object`.createNotificationChannel(channel)
             }
