@@ -27,6 +27,7 @@ class LSccsApp : Application() {
         if (BuildConfig.DEBUG) {
             //Timber.plant(DebugTree())
         }
+        //com.google.firebase.FirebaseApp.initializeApp(this)
     }
 
     private fun setLocale() {

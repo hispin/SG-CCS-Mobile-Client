@@ -5,7 +5,7 @@ plugins {
     //id 'org.jetbrains.kotlin.android' version '2.3.21' apply false
     //alias(libs.plugins.android.application)
     //alias(libs.plugins.kotlin.android)
-//    id 'com.google.gms.google-services'
+    id 'com.google.gms.google-services'
     //kotlin("plugin.serialization") version "1.9.0"
 }
 
@@ -22,8 +22,8 @@ android {
         applicationId "com.sensoguard.ccsmobileclient"
         minSdkVersion 26
         targetSdkVersion 36
-        versionCode 38
-        versionName "1.38"
+        versionCode 39
+        versionName "1.39"
         vectorDrawables.useSupportLibrary = true
         //testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
