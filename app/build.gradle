@@ -38,8 +38,9 @@ android {
         release {
             signingConfig signingConfigs.release
 
-            //bug fixed:the email (javax) is not been sent when minifyEnabled = true
-            minifyEnabled false
+            //remove the unused code of the libraries (see the rules of javax mail in proguard-rules.pro)
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
