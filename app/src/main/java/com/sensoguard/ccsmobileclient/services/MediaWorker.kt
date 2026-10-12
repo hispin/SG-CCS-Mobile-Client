@@ -1,29 +1,40 @@
 package com.sensoguard.ccsmobileclient.services
 
 import android.content.Context
-import android.content.Context.VIBRATOR_SERVICE
+import android.media.AudioAttributes
 import android.media.Ringtone
 import android.media.RingtoneManager
-import android.net.Uri
-import android.os.*
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
+import android.util.Log
+import androidx.core.net.toUri
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-import com.sensoguard.ccsmobileclient.global.*
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.TimeUnit
+import com.sensoguard.ccsmobileclient.global.ALARM_FLICKERING_DURATION_DEFAULT_VALUE_SECONDS
+import com.sensoguard.ccsmobileclient.global.ALARM_FLICKERING_DURATION_KEY
+import com.sensoguard.ccsmobileclient.global.IS_NOTIFICATION_SOUND_KEY
+import com.sensoguard.ccsmobileclient.global.IS_VIBRATE_WHEN_ALARM_KEY
+import com.sensoguard.ccsmobileclient.global.SELECTED_NOTIFICATION_SOUND_KEY
+import com.sensoguard.ccsmobileclient.global.getBooleanInPreference
+import com.sensoguard.ccsmobileclient.global.getLongInPreference
+import com.sensoguard.ccsmobileclient.global.getStringInPreference
 
+/**
+ * vibrate and play the sound of the alarm for the duration of the alarm
+ */
 class MediaWorker(val context: Context, workerParams: WorkerParameters) :
     Worker(context, workerParams) {
 
-    private var rington: Ringtone? = null
-    private var scheduleTaskExecutor: ScheduledExecutorService? = null
+    @Volatile
+    private var ringtone: Ringtone? = null
 
     override fun doWork(): Result {
         playVibrate()
         if (playAlarmSound()) {
-            shutDownTimer()
-            startTimer()
+            waitForAlarmDuration()
+            stopPlayingAlarm()
         }
         return Result.success()
     }
@@ -32,51 +43,63 @@ class MediaWorker(val context: Context, workerParams: WorkerParameters) :
      * execute vibrate
      */
     private fun playVibrate() {
-
         val isVibrateWhenAlarm =
             getBooleanInPreference(context, IS_VIBRATE_WHEN_ALARM_KEY, true)
         if (isVibrateWhenAlarm) {
-            // Get instance of Vibrator from current Context
-            //val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-
             val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 val vibratorManager =
                     context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
                 vibratorManager.defaultVibrator
             } else {
                 @Suppress("DEPRECATION")
-                context.getSystemService(VIBRATOR_SERVICE) as Vibrator
+                context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
             }
 
-
-            // Vibrate for 200 milliseconds
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                vibrator.vibrate(
-                    VibrationEffect.createOneShot(
-                        1000,
-                        VibrationEffect.DEFAULT_AMPLITUDE
-                    )
+            // Vibrate for 1 second
+            vibrator.vibrate(
+                VibrationEffect.createOneShot(
+                    VIBRATE_DURATION_MILLIS,
+                    VibrationEffect.DEFAULT_AMPLITUDE
                 )
-            } else {
-                vibrator.vibrate(1000)
-
-            }
-            Thread.sleep(1000)
+            )
+            Thread.sleep(VIBRATE_DURATION_MILLIS)
         }
+    }
 
+    /**
+     * wait until the duration of the alarm is over or the work is stopped
+     */
+    private fun waitForAlarmDuration() {
+        val timeoutSeconds = getLongInPreference(
+            context,
+            ALARM_FLICKERING_DURATION_KEY,
+            ALARM_FLICKERING_DURATION_DEFAULT_VALUE_SECONDS
+        ) ?: ALARM_FLICKERING_DURATION_DEFAULT_VALUE_SECONDS
+        val endTime = System.currentTimeMillis() + timeoutSeconds * 1000
+        try {
+            while (!isStopped && System.currentTimeMillis() < endTime) {
+                Thread.sleep(CHECK_INTERVAL_MILLIS)
+            }
+        } catch (ex: InterruptedException) {
+            Thread.currentThread().interrupt()
+        }
     }
 
     /**
      * stop play the sound of alarm
      */
     private fun stopPlayingAlarm() {
-        if (rington != null && rington?.isPlaying!!) {
-            rington?.stop()
+        ringtone?.let {
+            if (it.isPlaying) {
+                it.stop()
+            }
         }
+        ringtone = null
     }
 
     /**
      * execute play sound
+     * @return true if the sound is enabled
      */
     private fun playAlarmSound(): Boolean {
 
@@ -89,80 +112,33 @@ class MediaWorker(val context: Context, workerParams: WorkerParameters) :
         val selectedSound =
             getStringInPreference(context, SELECTED_NOTIFICATION_SOUND_KEY, "-1")
 
-        if (!selectedSound.equals("-1")) {
-
-            try {
-                val uri = Uri.parse(selectedSound)
-                if (rington != null && rington!!.isPlaying) {
-                    //if the sound it is already played,
-                    rington?.stop()
-                    Handler().postDelayed({
-                        rington = RingtoneManager.getRingtone(context, uri)
-                        rington?.play()
-                    }, 1000)
-                } else {
-                    rington = RingtoneManager.getRingtone(context, uri)
-                    rington?.play()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+        if (selectedSound != null && selectedSound != "-1") {
+            ringtone = RingtoneManager.getRingtone(context, selectedSound.toUri())
+            if (ringtone == null) {
+                Log.w(TAG, "the selected sound is not available")
             }
+            //play as alarm (the alarm volume, also in silent mode). since android 17 a sound
+            //of an app in background is allowed only for alarms or with foreground service
+            ringtone?.audioAttributes = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_ALARM)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+            ringtone?.play()
         }
         return true
     }
 
-    /**
-     * start timer
-     */
-    private fun startTimer() {
-        //if there is already at least one alarm ,it is not necessary to initial the timer
-        if (scheduleTaskExecutor == null
-            || (scheduleTaskExecutor?.isShutdown != null && scheduleTaskExecutor?.isShutdown!!)
-        ) {
-            scheduleTaskExecutor = Executors.newScheduledThreadPool(1)
-            executeTimer()
-        }
-    }
-
-    /**
-     * execute the time
-     */
-    private fun executeTimer() {
-
-        val timeout = getLongInPreference(
-            context,
-            ALARM_FLICKERING_DURATION_KEY,
-            ALARM_FLICKERING_DURATION_DEFAULT_VALUE_SECONDS
-        )
-        // This schedule a task to run every 1 second:
-        if (timeout != null) {
-            scheduleTaskExecutor?.scheduleAtFixedRate({
-                stopPlayingAlarm()
-                shutDownTimer()
-                //stopSelf()
-
-            }, timeout, timeout, TimeUnit.SECONDS)
-        }
-
-    }
-
-
-    /**
-     * shut down the timer
-     */
-    private fun shutDownTimer() {
-        try {
-            scheduleTaskExecutor?.shutdownNow()
-        } catch (ex: Exception) {
-        } finally {
-
-        }
-    }
-
-
     override fun onStopped() {
         super.onStopped()
         stopPlayingAlarm()
-        shutDownTimer()
+    }
+
+    companion object {
+        private const val TAG = "MediaWorker"
+        private const val VIBRATE_DURATION_MILLIS = 1000L
+        private const val CHECK_INTERVAL_MILLIS = 200L
+
+        //the unique name of the work, a new alarm replaces the sound of the previous alarm
+        const val UNIQUE_WORK_NAME = "alarmSound"
     }
 }

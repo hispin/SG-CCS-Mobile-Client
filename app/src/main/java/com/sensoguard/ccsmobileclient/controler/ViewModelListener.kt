@@ -7,154 +7,95 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.sensoguard.ccsmobileclient.classes.AlarmSensor
-import com.sensoguard.ccsmobileclient.classes.Sensor
-import com.sensoguard.ccsmobileclient.global.*
-import java.util.*
+import com.sensoguard.ccsmobileclient.global.ALARM_FLICKERING_DURATION_DEFAULT_VALUE_SECONDS
+import com.sensoguard.ccsmobileclient.global.ALARM_FLICKERING_DURATION_KEY
+import com.sensoguard.ccsmobileclient.global.STOP_ALARM_SOUND
+import com.sensoguard.ccsmobileclient.global.UserSession
+import com.sensoguard.ccsmobileclient.global.getLongInPreference
+import java.util.Calendar
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
 
 class ViewModelListener(application: Application) : AndroidViewModel(application) {
 
-    private var t: ScheduledFuture<*>?=null
-    private var scheduleTaskExecutor: ScheduledExecutorService?=null
+    private var scheduleTaskExecutor: ScheduledExecutorService? = null
 
 
     //listener to changes when the timer interval is time out
-    private var currentCalendar: MutableLiveData<Calendar>?=null
+    private val currentCalendar = MutableLiveData<Calendar>()
 
-    fun startCurrentCalendarListener(): LiveData<Calendar>? {
-
-        if (currentCalendar == null) {
-            currentCalendar = MutableLiveData()
-        }
-
-//        if (UserSession.instance.alarmSensors == null || UserSession.instance.alarmSensors?.isEmpty()!!) {
-//            shutDownTimer()
-//            getApplication<Application>().applicationContext.sendBroadcast(Intent(STOP_ALARM_SOUND))
-//            //stopPlayingAlarm()
-//        }
-
+    fun startCurrentCalendarListener(): LiveData<Calendar> {
         return currentCalendar
     }
 
 
-    fun startTimer(){
+    fun startTimer() {
         //if there is already at least one alarm ,it is not necessary to initial the timer
-        if(scheduleTaskExecutor==null
-            || (scheduleTaskExecutor?.isShutdown!=null && scheduleTaskExecutor?.isShutdown!!)
-        ) {
-            scheduleTaskExecutor = Executors.newScheduledThreadPool(1)
+        if (scheduleTaskExecutor?.isShutdown != false) {
+            scheduleTaskExecutor = Executors.newSingleThreadScheduledExecutor()
             executeTimer()
         }
     }
 
-    // execute the time
+    // execute the timer every second
     private fun executeTimer() {
-        //Log.d("testTimer", "initial timer")
-
-        // This schedule a task to run every 10 minutes:
-        scheduleTaskExecutor?.scheduleAtFixedRate({
-            Log.d("testTimer", "tick")
+        scheduleTaskExecutor?.scheduleWithFixedDelay({
             try {
-
                 //check if there is alarm sensor that already timeout
-                replaceSensorAlarmTimeOutToSensorMarker()
+                setSoundOffForTimeoutAlarms()
 
                 //if there is no alarm sensor the stop timer and sound of the alarm
-                if (UserSession.instance.alarmSensors == null
-                    || UserSession.instance.alarmSensors?.isEmpty()!!
-                    || isAllSensorAlarmTimeOutSound()
-                ) {
+                val alarmSensors = UserSession.instance.alarmSensors
+                if (alarmSensors.isEmpty() || alarmSensors.none { it.isSound }) {
                     //stop the timer
                     shutDownTimer()
                     //stop the sound alarm
-                    getApplication<Application>().applicationContext.sendBroadcast(
-                        Intent(
-                            STOP_ALARM_SOUND
-                        )
+                    val context = getApplication<Application>().applicationContext
+                    context.sendBroadcast(
+                        Intent(STOP_ALARM_SOUND).setPackage(context.packageName)
                     )
                 }
                 // update screen if showed
-                this.currentCalendar?.postValue(Calendar.getInstance())
+                currentCalendar.postValue(Calendar.getInstance())
 
-            } catch (ex: Exception) {
-                Log.d("testTimer", "exception:" + ex.message)
+            } catch (ex: RuntimeException) {
+                Log.e(TAG, "timer exception", ex)
             }
 
         }, 0, 1, TimeUnit.SECONDS)
     }
 
-    /**
-     * check if all the alarms are timeout for sound only
-     */
-    private fun isAllSensorAlarmTimeOutSound(): Boolean {
-        val iteratorList = UserSession.instance.alarmSensors?.listIterator()
-        while (iteratorList != null && iteratorList.hasNext()) {
-            val sensorItem = iteratorList.next()
-            if (sensorItem.isSound) {
-                return false
-            }
-        }
-        return true
-    }
-
     //check if there is alarm sensor that already timeout then set sound as off
-    private fun replaceSensorAlarmTimeOutToSensorMarker() {
-        //get sensors from locally
-        val sensorsArr = getSensorsFromLocally(getApplication<Application>().applicationContext)
-        val iteratorList = sensorsArr?.listIterator()
-        while (iteratorList != null && iteratorList.hasNext()) {
-            val sensorItem = iteratorList.next()
-            val sensorAlarm = getSensorAlarmBySensor(sensorItem)
-            if (sensorAlarm != null) {
-                //if time out then remove the sensor from alarm list
-                if (isSensorAlarmTimeout(sensorAlarm)) {
-                    sensorAlarm.isSound = false
-                    //UserSession.instance.alarmSensors?.remove(sensorAlarm)
-                }
-            }
-        }
+    private fun setSoundOffForTimeoutAlarms() {
+        UserSession.instance.alarmSensors
+            .filter { isSensorAlarmTimeout(it) }
+            .forEach { it.isSound = false }
     }
 
     //shut down the timer
     fun shutDownTimer() {
-        Log.d("testTimer", "shutDownTimer")
+        Log.d(TAG, "shutDownTimer")
         scheduleTaskExecutor?.shutdownNow()
     }
 
-    //check if the sensor is in alarm process
-    private fun getSensorAlarmBySensor(sensor: Sensor): AlarmSensor? {
-
-        val iteratorList = UserSession.instance.alarmSensors?.listIterator()
-        while (iteratorList != null && iteratorList.hasNext()) {
-            val sensorItem = iteratorList.next()
-            if (sensorItem.alarmSensorId == sensor.getId()) {
-                return sensorItem
-            }
-        }
-        return null
+    override fun onCleared() {
+        shutDownTimer()
     }
 
     //check if the alarm sensor is in duration
-    private fun isSensorAlarmTimeout(alarmProcess: AlarmSensor?): Boolean {
-
+    private fun isSensorAlarmTimeout(alarmProcess: AlarmSensor): Boolean {
         val timeout = getLongInPreference(
             getApplication<Application>().applicationContext,
             ALARM_FLICKERING_DURATION_KEY,
             ALARM_FLICKERING_DURATION_DEFAULT_VALUE_SECONDS
-        )
-        val futureTimeout = timeout?.let { alarmProcess?.alarmTime?.timeInMillis?.plus(it * 1000) }
+        ) ?: return true
+        val futureTimeout = alarmProcess.alarmTime.timeInMillis + timeout * 1000
+        return futureTimeout < Calendar.getInstance().timeInMillis
+    }
 
-        if (futureTimeout != null) {
-            val calendar = Calendar.getInstance()
-            return when {
-                futureTimeout < calendar.timeInMillis -> true
-                else -> false
-            }
-        }
-        return true
+    companion object {
+        private const val TAG = "ViewModelListener"
     }
 }

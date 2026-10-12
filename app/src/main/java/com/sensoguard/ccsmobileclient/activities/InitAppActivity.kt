@@ -1,76 +1,66 @@
 package com.sensoguard.ccsmobileclient.activities
 
 import android.Manifest
-import android.content.Context
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.telephony.TelephonyManager
 import android.widget.Toast
-import androidx.annotation.RequiresApi
-import androidx.core.app.ActivityCompat
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import com.sensoguard.ccsmobileclient.R
 import com.sensoguard.ccsmobileclient.classes.CryptoHandler
-import com.sensoguard.ccsmobileclient.global.*
+import com.sensoguard.ccsmobileclient.global.ACTIVATION_CODE_KEY
+import com.sensoguard.ccsmobileclient.global.IMEI_KEY
+import com.sensoguard.ccsmobileclient.global.NO_DATA
+import com.sensoguard.ccsmobileclient.global.getStringInPreference
 
 class InitAppActivity : ParentActivity() {
 
     private var myImei: String? = null
 
+    //continue to the activation also when the notifications are not allowed
+    private val notificationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            configureActivation()
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
-        //setBooleanInPreference(this, IS_SSL_MAIL,false)
-        //init the usb disconnected
-        sendBroadcast(Intent(STOP_READ_DATA_KEY))
-        setBooleanInPreference(this, USB_DEVICE_CONNECT_STATUS, false)
-
         setContentView(R.layout.activity_init_app)
 
-        //start timer to supervise the usb software connection
-        //startTimerGeneralService()
-
-        setReadPhoneStatePermission()
+        checkNotificationPermission()
     }
 
 
     /**
-     * set notification post permission
+     * ask for notification post permission (android 13 and above)
      */
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    fun checkNotificationPermission() {
-        if (ContextCompat.checkSelfPermission(
+    private fun checkNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+            && ContextCompat.checkSelfPermission(
                 this.applicationContext,
                 Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
+            ) != PackageManager.PERMISSION_GRANTED
         ) {
-            configureActivation()
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         } else {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(
-                    Manifest.permission.POST_NOTIFICATIONS
-                ),
-                PERMISSIONS_REQUEST_NOTIFICATION
-            )
-
+            configureActivation()
         }
     }
 
 
-    //get the IMEI of the device and check it with the locally
+    //get the id of the device and check it with the locally
     private fun configureActivation() {
 
-        myImei = getDeviceIMEI()
-        //tvImei?.text = myImei
+        myImei = getAndroidId()
 
         val localActivateCode = getStringInPreference(this, ACTIVATION_CODE_KEY, NO_DATA)
-        if (!localActivateCode.equals(NO_DATA)) {
+        if (localActivateCode != null && localActivateCode != NO_DATA) {
             val myActivateCode = CryptoHandler.getInstance().encrypt(myImei)
-            if (localActivateCode != null && myActivateCode.startsWith(localActivateCode)) {
+            if (myActivateCode.startsWith(localActivateCode)) {
                 val inn = Intent(this, MainActivity::class.java)
                 inn.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                 startActivity(inn)
@@ -91,85 +81,18 @@ class InitAppActivity : ParentActivity() {
     private fun openActivation() {
         val inn = Intent(this, ActivationActivity::class.java)
         inn.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        inn.putExtra(IMEI_KEY,myImei)
-        startActivity(Intent(inn))
+        inn.putExtra(IMEI_KEY, myImei)
+        startActivity(inn)
     }
 
 
-    //get the device IMEI
-    private fun getDeviceIMEI(): String? {
-        var deviceUniqueIdentifier: String? = null
-        val tm = this.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-        if (null != tm) {
-            if (ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.READ_PHONE_STATE
-                ) != PackageManager.PERMISSION_GRANTED
-                
-            ) {
-
-                deviceUniqueIdentifier = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    tm.imei
-                } else {
-                    tm.deviceId
-                }
-            }
-        }
-        if (null == deviceUniqueIdentifier || deviceUniqueIdentifier.isEmpty()) {
-            deviceUniqueIdentifier =
-                Settings.Secure.getString(this.contentResolver, Settings.Secure.ANDROID_ID)
-        }
-        return deviceUniqueIdentifier
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
-            PERMISSIONS_REQUEST_READ_PHONE_STATE -> {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        checkNotificationPermission()
-                    } else {
-                        configureActivation()
-                    }
-                }
-            }
-            PERMISSIONS_REQUEST_NOTIFICATION -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    configureActivation()
-                }
-            }
-        }
-
-    }
-
-    //set permission of READ_PHONE_STATE
-    private fun setReadPhoneStatePermission() {
-        /*
-     * Request location permission, so that we can get the location of the
-     * device. The result of the permission request is handled by a callback,
-     * onRequestPermissionsResult.
+    /**
+     * get the id of the device (the activation code is created from this id).
+     * the IMEI is not available for apps since android 10, so the id of the device is used
      */
-        if (ContextCompat.checkSelfPermission(
-                this.applicationContext,
-                Manifest.permission.READ_PHONE_STATE
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                checkNotificationPermission()
-            } else {
-                configureActivation()
-            }
-        } else {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.READ_PHONE_STATE), PERMISSIONS_REQUEST_READ_PHONE_STATE
-            )
-        }
+    //the activation of the app is bound to the device
+    @SuppressLint("HardwareIds")
+    private fun getAndroidId(): String {
+        return Settings.Secure.getString(this.contentResolver, Settings.Secure.ANDROID_ID)
     }
 }

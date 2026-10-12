@@ -1,80 +1,51 @@
 package com.sensoguard.ccsmobileclient.classes;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.util.Log;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import androidx.annotation.NonNull;
 
+/**
+ * offer to send the crash details by email, then let the default handler finish the crash
+ */
 public class MyExceptionHandler implements Thread.UncaughtExceptionHandler {
 
-    private Activity activity;
+    private static final String TAG = "MyExceptionHandler";
+
+    private final Activity activity;
+    private final Thread.UncaughtExceptionHandler defaultHandler;
 
     public MyExceptionHandler(Activity a) {
         activity = a;
+        defaultHandler = Thread.getDefaultUncaughtExceptionHandler();
     }
 
     @Override
-    public void uncaughtException(Thread thread, Throwable ex) {
-
-        String errorMsg = printLog(ex);
+    public void uncaughtException(@NonNull Thread thread, @NonNull Throwable ex) {
+        String errorMsg = Log.getStackTraceString(ex);
+        Log.e(TAG, errorMsg);
         sendEmail(errorMsg);
         activity.finish();
-        System.exit(2);
 
-
-//        if (BuildConfig.REPORT_CRASH) {
-//
-//            FirebaseCrash.report(ex);
-//
-//            restartApp();
-//        } else if (ex.getStackTrace() != null) {
-//
-//            sendEmail(errorMsg);
-//            activity.finish();
-//            System.exit(2);
-//        }
-        //throw new RuntimeException("This is a crash");
+        if (defaultHandler != null) {
+            defaultHandler.uncaughtException(thread, ex);
+        } else {
+            System.exit(2);
+        }
     }
 
     private void sendEmail(String msg) {
-
         Intent i = new Intent(Intent.ACTION_SEND);
         i.setType("message/rfc822");
-        i.putExtra(Intent.EXTRA_EMAIL, new String[]{"hag.swead@gmail.com","tomer@sensoguard.com" });
+        i.putExtra(Intent.EXTRA_EMAIL, new String[]{"hag.swead@gmail.com", "tomer@sensoguard.com"});
         i.putExtra(Intent.EXTRA_SUBJECT, "SensoGuard app has been crashed");
         i.putExtra(Intent.EXTRA_TEXT, msg);
         try {
             activity.startActivity(Intent.createChooser(i, "Send mail..."));
-        } catch (android.content.ActivityNotFoundException ex) {
-            ex.printStackTrace();
+        } catch (ActivityNotFoundException e) {
+            Log.e(TAG, "no email app", e);
         }
-
-    }
-
-//    private void restartApp() {
-//        Intent intent = new Intent(activity, MyScreensActivity.class);
-//        intent.putExtra("crash", true);
-//        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-//                | Intent.FLAG_ACTIVITY_CLEAR_TASK
-//                | Intent.FLAG_ACTIVITY_NEW_TASK);
-//
-//        PendingIntent pendingIntent = PendingIntent.getActivity(GatewayMobile.getInstance().getBaseContext(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
-//        AlarmManager mgr = (AlarmManager) GatewayMobile.getInstance().getBaseContext().getSystemService(Context.ALARM_SERVICE);
-//        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, pendingIntent);
-//        activity.finish();
-//        System.exit(2);
-//    }
-
-    private String printLog(Throwable ex) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        ex.printStackTrace(new PrintWriter(sw));
-        if (pw != null) {
-            Log.e("MyExceptionHandler", Log.getStackTraceString(ex));
-        }
-        return Log.getStackTraceString(ex);
     }
 }
-

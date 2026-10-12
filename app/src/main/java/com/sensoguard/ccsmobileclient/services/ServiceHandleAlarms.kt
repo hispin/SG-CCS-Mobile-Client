@@ -6,158 +6,107 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.media.Ringtone
-import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.sensoguard.ccsmobileclient.R
 import com.sensoguard.ccsmobileclient.classes.EmailService
-import com.sensoguard.ccsmobileclient.global.ALARM_TYPE_INDEX_KEY
 import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_ID_KEY
 import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_KEY
-import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_NOT_DEFINED_KEY
 import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_TYPE_KEY
 import com.sensoguard.ccsmobileclient.global.IS_FORWARD_ALARM_EMAIL
 import com.sensoguard.ccsmobileclient.global.IS_SSL_MAIL
 import com.sensoguard.ccsmobileclient.global.PASSWORD_MAIL
 import com.sensoguard.ccsmobileclient.global.PORT_MAIL
-import com.sensoguard.ccsmobileclient.global.READ_DATA_KEY
-import com.sensoguard.ccsmobileclient.global.READ_DATA_KEY_TEST
 import com.sensoguard.ccsmobileclient.global.RECIPIENT_MAIL
-import com.sensoguard.ccsmobileclient.global.SEISMIC_TYPE
 import com.sensoguard.ccsmobileclient.global.SERVER_MAIL
-import com.sensoguard.ccsmobileclient.global.STOP_ALARM_SOUND
 import com.sensoguard.ccsmobileclient.global.USER_NAME_MAIL
 import com.sensoguard.ccsmobileclient.global.getBooleanInPreference
 import com.sensoguard.ccsmobileclient.global.getIntInPreference
 import com.sensoguard.ccsmobileclient.global.getStrDateTimeByMilliSeconds
 import com.sensoguard.ccsmobileclient.global.getStringInPreference
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import java.util.*
+import java.util.Calendar
+import javax.mail.internet.AddressException
 import javax.mail.internet.InternetAddress
 
-
+/**
+ * keep the app running for listening to the alarms (show toast and forward the alarm by email)
+ */
 class ServiceHandleAlarms : ParentService() {
-    private val TAG = "ServiceHandleAlarms"
 
+    //the scope of sending the emails in background
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onCreate() {
         super.onCreate()
-        startSysForeGround()
+        setFilter()
     }
 
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
-        stopPlayingAlarm()
-        this@ServiceHandleAlarms.stopSelf()
+        stopSelf()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
-        //FusedLocationProviderClient is for interacting with the location using fused location
-        setFilter()
         startSysForeGround()
         return START_NOT_STICKY
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        unregisterReceiver(usbReceiver)
+        unregisterReceiver(alarmReceiver)
+        serviceScope.cancel()
     }
 
     private fun setFilter() {
-        val filter = IntentFilter(READ_DATA_KEY)
-        filter.addAction(READ_DATA_KEY_TEST)
-        filter.addAction(STOP_ALARM_SOUND)
-        filter.addAction(CREATE_ALARM_KEY)
-        filter.addAction(CREATE_ALARM_NOT_DEFINED_KEY)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(usbReceiver, filter, RECEIVER_NOT_EXPORTED)
-        } else {
-            ContextCompat.registerReceiver(
-                this,
-                usbReceiver,
-                filter,
-                ContextCompat.RECEIVER_NOT_EXPORTED
-            )
-        }
+        ContextCompat.registerReceiver(
+            this,
+            alarmReceiver,
+            IntentFilter(CREATE_ALARM_KEY),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
     }
 
-    private val usbReceiver = object : BroadcastReceiver() {
+    private val alarmReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            when (intent.action) {
-                CREATE_ALARM_KEY -> {
-                    val alarmSensorId = intent.getStringExtra(CREATE_ALARM_ID_KEY)
-                    val type = intent.getStringExtra(CREATE_ALARM_TYPE_KEY)
-                    val alarmTypeId = intent.getLongExtra(ALARM_TYPE_INDEX_KEY, -1)
-                    val date = getStrDateTimeByMilliSeconds(
-                        Calendar.getInstance().timeInMillis,
-                        "dd/MM/yy kk:mm:ss",
-                        context
-                    )
+            if (intent.action == CREATE_ALARM_KEY) {
+                val alarmSensorId = intent.getStringExtra(CREATE_ALARM_ID_KEY)
+                val type = intent.getStringExtra(CREATE_ALARM_TYPE_KEY)
+                val date = getStrDateTimeByMilliSeconds(
+                    Calendar.getInstance().timeInMillis,
+                    "dd/MM/yy kk:mm:ss",
+                    context
+                )
 
-                    val msg = resources.getString(
-                        R.string.email_content,
-                        type,
-                        alarmSensorId,
-                        date
-                    )
+                val msg = resources.getString(
+                    R.string.email_content,
+                    type,
+                    alarmSensorId,
+                    date
+                )
 
-                    Toast.makeText(
-                        context,
-                        "$type alarm from unit $alarmSensorId ",
-                        Toast.LENGTH_LONG
-                    )
-                        .show()
+                Toast.makeText(
+                    context,
+                    resources.getString(R.string.alarm_from_unit, type, alarmSensorId),
+                    Toast.LENGTH_LONG
+                ).show()
 
-                    sendEmailBakground(msg)
-                    //play sound and vibrate
-                    //playAlarmSound()
-                    //playVibrate()
-
-                }
-                CREATE_ALARM_NOT_DEFINED_KEY -> {
-                    val alarmSensorId = intent.getStringExtra(CREATE_ALARM_ID_KEY)
-                    val type = intent.getStringExtra(CREATE_ALARM_TYPE_KEY)
-                    val sensorTypeId = intent.getLongExtra(ALARM_TYPE_INDEX_KEY, -1)
-                    if (sensorTypeId == SEISMIC_TYPE) {
-                        Toast.makeText(
-                            context,
-                            "$type alarm from unit $alarmSensorId ",
-                            Toast.LENGTH_LONG
-                        )
-                            .show()
-                        //accept test alarm (for testing)
-                    } else {
-                        val values = resources.getStringArray(R.array.sensor_type)
-
-                        val idx = sensorTypeId.toInt()
-                        var sensorType = ""
-                        if (idx >= 0 && idx < values.size) {
-                            sensorType = values[idx]
-                        }
-
-                        Toast.makeText(
-                            context,
-                            "$sensorType alarm from unit $alarmSensorId ",
-                            Toast.LENGTH_LONG
-                        )
-                            .show()
-                    }
-                }
-                STOP_ALARM_SOUND -> {
-                    stopPlayingAlarm()
-                }
+                sendEmailBackground(msg)
             }
         }
     }
 
 
     //send alarm email
-    private fun sendEmailBakground(msg: String) {
+    private fun sendEmailBackground(msg: String) {
 
         //check if forward alarm email is active
         val isForwardAlarmEmail = getBooleanInPreference(this, IS_FORWARD_ALARM_EMAIL, false)
@@ -173,73 +122,55 @@ class ServiceHandleAlarms : ParentService() {
         val isSSL = getBooleanInPreference(this, IS_SSL_MAIL, false)
 
         //check if the account mail has been filled
-        if (userName.equals("-1") || password.equals("-1")
-            || recipient.equals("-1") || server.equals("-1")
-            || port == -1
+        if (userName == null || userName == "-1" || password == null || password == "-1"
+            || recipient == null || recipient == "-1" || server == null || server == "-1"
+            || port == null || port == -1
         ) {
-            //Bugs fixed : cancel this message
-            //showToast(this, resources.getString(R.string.no_fill_account))
             return
         }
 
-        val auth = EmailService.UserPassAuthenticator(userName!!, password!!)//sg-patrol@sgsmtp.com
-        val to = listOf(InternetAddress(recipient))
-        val from = InternetAddress(userName)
-        val email = EmailService.Email(
-            auth,
-            to,
-            from,
-            resources.getString(R.string.an_alert_was_received),
-            msg
-        )
-        val emailService = EmailService(server!!, port!!)//("mail.sgsmtp.com", port!!)
-
-
-        //TODO ssl=0
-        //use CoroutineScope to prevent blocking main thread
-        GlobalScope.launch { // or however you do background threads
-            emailService.send(email, isSSL)
+        val email = try {
+            EmailService.Email(
+                EmailService.UserPassAuthenticator(userName, password),
+                listOf(InternetAddress(recipient)),
+                InternetAddress(userName),
+                resources.getString(R.string.an_alert_was_received),
+                msg
+            )
+        } catch (ex: AddressException) {
+            Log.e(TAG, "invalid email address", ex)
+            return
         }
-    }
+        val emailService = EmailService(server, port)
 
-
-    private var rington: Ringtone? = null
-
-    private fun stopPlayingAlarm() {
-        if (rington != null && rington?.isPlaying!!) {
-            rington?.stop()
+        //send in background to prevent blocking main thread
+        serviceScope.launch {
+            emailService.send(email, isSSL)
         }
     }
 
 
     //The system allows apps to call Context.startForegroundService() even while the app is in the background. However, the app must call that service's startForeground() method within five seconds after the service is created
     private fun startSysForeGround() {
-        fun getNotificationIcon(): Int {
-            val useWhiteIcon =
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-            return if (useWhiteIcon) R.drawable.ic_app_notification else R.mipmap.ic_launcher
-        }
-        if (Build.VERSION.SDK_INT >= 26) {
-            val CHANNEL_ID = "my_channel_01"
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Channel human readable title",
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            "Channel human readable title",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
 
-            val `object` = getSystemService(NOTIFICATION_SERVICE)
-            if (`object` != null && `object` is NotificationManager) {
-                `object`.createNotificationChannel(channel)
-            }
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentText("SG-CCS Mobile Client is running")
+            .setSmallIcon(R.drawable.ic_app_notification)
+            .build()
 
-            val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentText("SG-CCS Mobile Client is running")
-                    .setSmallIcon(getNotificationIcon())
-                    .build()
+        startForeground(1, notification)
+    }
 
-                startForeground(1, notification)
-            }
-        }
+    companion object {
+        private const val TAG = "ServiceHandleAlarms"
 
-
+        //the channel of the notification of the running service
+        const val CHANNEL_ID = "my_channel_01"
+    }
 }

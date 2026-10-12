@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
-    <external-path name="external_files" path="." />
+    <!-- the exported csv of the alarm log -->
+    <cache-path name="csv" path="csv/" />
 </paths>

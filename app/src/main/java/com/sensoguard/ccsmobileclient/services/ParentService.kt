@@ -7,15 +7,10 @@ import com.sensoguard.ccsmobileclient.global.configurationLanguage
 
 open class ParentService : Service() {
 
-    override fun onBind(intent: Intent): IBinder {
-        TODO("Return the communication channel to the service.")
-    }
+    //the services are started and not bound
+    override fun onBind(intent: Intent): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-//        val languageToLoad:String? = getStringInPreference(this, CURRENT_LANG_KEY_PREF, "en")
-//        if(languageToLoad!=null) {
-//            setAppLanguage(this, languageToLoad)
-//        }
         configurationLanguage(applicationContext)
         return super.onStartCommand(intent, flags, startId)
     }

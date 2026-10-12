@@ -1,24 +1,25 @@
 package com.sensoguard.ccsmobileclient.global
 
 import android.content.Context
-import android.os.Build
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
-fun getStringFromCalendar(calendar: Calendar,format:String,context: Context):String{
-    val locale=if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) context.resources.configuration.locales.getFirstMatch(context.resources.assets.locales)
-    else context.resources.configuration.locale
-    val dateFormat = SimpleDateFormat(format, locale)//"kk:mm dd/MM/yy"
-    //dateFormat.timeZone = TimeZone.getTimeZone("UTC")
-    val dateString = dateFormat.format(calendar.time)
-    return dateString
+//the locale of the app (the language that has been selected)
+private fun getAppLocale(context: Context): Locale {
+    val resources = context.resources
+    return resources.configuration.locales.getFirstMatch(resources.assets.locales)
+        ?: Locale.getDefault()
+}
+
+fun getStringFromCalendar(calendar: Calendar, format: String, context: Context): String {
+    val dateFormat = SimpleDateFormat(format, getAppLocale(context))//"kk:mm dd/MM/yy"
+    return dateFormat.format(calendar.time)
 }
 
 //get string format by current date time in milliseconds format
-fun getStrDateTimeByMilliSeconds(milliSeconds: Long,format:String,context: Context):String{
-    val locale=if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) context.resources.configuration.locales.getFirstMatch(context.resources.assets.locales)
-    else context.resources.configuration.locale
-    val dateFormat= SimpleDateFormat(format, locale)
-    val date = Date(milliSeconds)
-    return dateFormat.format(date)
+fun getStrDateTimeByMilliSeconds(milliSeconds: Long, format: String, context: Context): String {
+    val dateFormat = SimpleDateFormat(format, getAppLocale(context))
+    return dateFormat.format(Date(milliSeconds))
 }

@@ -5,7 +5,6 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/common_google_signin_btn_text_dark_default"
         tools:context=".fragments.MapmobFragment">
 
     <com.mapbox.maps.MapView
@@ -24,28 +23,10 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
             android:layout_marginEnd="36dp"
-
             android:layout_marginBottom="36dp"
-            android:contentDescription="sss"
+            android:contentDescription="@string/my_location"
             android:src="@drawable/ic_move_my_location"
-            android:visibility="visible"
-            app:backgroundTint="@color/turquoise_blue"
-            app:layout_constraintBottom_toBottomOf="parent" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fbTest1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|end"
-            android:layout_marginTop="36dp"
-            android:layout_marginEnd="36dp"
-            android:contentDescription="sss"
-            android:src="@android:drawable/ic_menu_view"
-            android:tint="@color/common_google_signin_btn_text_dark_focused"
-            android:visibility="gone"
-            app:backgroundTint="@color/divider_list"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:backgroundTint="@color/turquoise_blue" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fbClear"
@@ -54,13 +35,9 @@
             android:layout_gravity="top|end"
             android:layout_marginTop="1dp"
             android:layout_marginEnd="60dp"
-            android:contentDescription="sss"
+            android:contentDescription="@string/clear_alarms"
             android:src="@android:drawable/ic_menu_delete"
-            android:tint="@color/common_google_signin_btn_text_dark_focused"
-            android:visibility="visible"
-            app:backgroundTint="@color/turquoise_blue"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
+            app:tint="@color/common_google_signin_btn_text_dark_focused"
+            app:backgroundTint="@color/turquoise_blue" />
 
 </FrameLayout>

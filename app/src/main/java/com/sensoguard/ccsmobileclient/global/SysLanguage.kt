@@ -2,10 +2,9 @@ package com.sensoguard.ccsmobileclient.global
 
 import android.content.Context
 import android.content.res.Configuration
-import android.os.Build
 import com.sensoguard.ccsmobileclient.classes.GeneralItemMenu
 import com.sensoguard.ccsmobileclient.classes.LanguageManager
-import java.util.*
+import java.util.Locale
 
 
 //Get the current language of the app
@@ -16,7 +15,7 @@ fun getAppLanguage(): String {
 fun configurationLanguage(context: Context) {
     LanguageManager.setLanguageList()
     val currentLanguage = getStringInPreference(context, CURRENT_LANG_KEY_PREF, "-1")
-    if (currentLanguage != "-1") {
+    if (currentLanguage != null && currentLanguage != "-1") {
         GeneralItemMenu.selectedItem = currentLanguage
         setAppLanguage(context, GeneralItemMenu.selectedItem)
     } else {
@@ -27,26 +26,18 @@ fun configurationLanguage(context: Context) {
         }
     }
 }
-//
+
 //set language for the application
 fun setAppLanguage(c: Context, lang: String) {
-    val localeNew = Locale(lang)
+    val localeNew = Locale.forLanguageTag(lang)
     Locale.setDefault(localeNew)
 
     val res = c.resources
     val newConfig = Configuration(res.configuration)
-    //newConfig.locale = localeNew
     newConfig.setLocale(localeNew)
     newConfig.setLayoutDirection(localeNew)
 
+    //the language is changed in place for the activities and the services of the app
+    @Suppress("DEPRECATION")
     res.updateConfiguration(newConfig, res.displayMetrics)
-
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-        newConfig.setLocale(localeNew)
-        c.createConfigurationContext(newConfig)
-    }
 }
-
-
-
-

@@ -4,11 +4,8 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Context.RECEIVER_EXPORTED
 import android.content.Intent
 import android.content.IntentFilter
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.text.util.Linkify
 import android.view.LayoutInflater
@@ -20,20 +17,18 @@ import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.os.BundleCompat
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.sensoguard.ccsmobileclient.R
 import com.sensoguard.ccsmobileclient.adapters.AlarmAdapter
 import com.sensoguard.ccsmobileclient.classes.Alarm
-import com.sensoguard.ccsmobileclient.classes.Sensor
 import com.sensoguard.ccsmobileclient.classes.SystemSort
-import com.sensoguard.ccsmobileclient.global.ALARM_LIST_KEY_PREF
 import com.sensoguard.ccsmobileclient.global.CAMERA_KEY
 import com.sensoguard.ccsmobileclient.global.CAMERA_SORTED
 import com.sensoguard.ccsmobileclient.global.CREATE_ALARM_KEY
 import com.sensoguard.ccsmobileclient.global.DATE_SORTED
-import com.sensoguard.ccsmobileclient.global.ERROR_RESP
 import com.sensoguard.ccsmobileclient.global.FROM_CALENDAR
 import com.sensoguard.ccsmobileclient.global.NO_SORTED
 import com.sensoguard.ccsmobileclient.global.RESULT_CODE
@@ -44,41 +39,20 @@ import com.sensoguard.ccsmobileclient.global.SORT_PICK_DATE_TIME_REQUEST_CODE
 import com.sensoguard.ccsmobileclient.global.SORT_TYPE_KEY
 import com.sensoguard.ccsmobileclient.global.TO_CALENDAR
 import com.sensoguard.ccsmobileclient.global.alarmsListToCsvFile
-import com.sensoguard.ccsmobileclient.global.convertJsonToAlarmList
 import com.sensoguard.ccsmobileclient.global.convertJsonToSystemSortList
-import com.sensoguard.ccsmobileclient.global.convertToAlarmsGson
-import com.sensoguard.ccsmobileclient.global.getStringFromCalendar
-import com.sensoguard.ccsmobileclient.global.getStringInPreference
-import com.sensoguard.ccsmobileclient.global.setStringInPreference
+import com.sensoguard.ccsmobileclient.global.populateAlarmsFromLocally
 import com.sensoguard.ccsmobileclient.global.shareCsv
 import com.sensoguard.ccsmobileclient.global.storeAlarmsToLocally
 import com.sensoguard.ccsmobileclient.global.writeCsvFile
-import com.sensoguard.ccsmobileclient.interfaces.OnAdapterListener
-import com.sensoguard.ccsmobileclient.interfaces.OnFragmentListener
-import java.util.*
+import java.util.Calendar
 
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+class AlarmsLogFragment : ParentFragment() {
 
-class AlarmsLogFragment : ParentFragment(), OnAdapterListener {
-
-    override fun saveSensors(detector: Sensor) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun saveNameSensor(detector: Sensor) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
     private var myAlarms: ArrayList<Alarm>? = null
     private var mySortedAlarms: ArrayList<Alarm>? = null
     private var rvAlarm: RecyclerView? = null
     private var alarmAdapter: AlarmAdapter? = null
     private var btnCsv: Button? = null
-    //private var btnDeleteAll: Button? = null
 
     private var btnFilterSystem: Button? = null
     private var btnFilterDateTime: Button? = null
@@ -86,43 +60,22 @@ class AlarmsLogFragment : ParentFragment(), OnAdapterListener {
     private var ibDeleteSelectedItems: ImageButton? = null
     private var tvReset: TextView? = null
 
-    var mySortedCameras: ArrayList<SystemSort>? = null
-    var fromCalendar: Calendar? = null
-    var toCalendar: Calendar? = null
-    private var listener: OnFragmentListener? = null
+    private var mySortedCameras: ArrayList<SystemSort>? = null
+    private var fromCalendar: Calendar? = null
+    private var toCalendar: Calendar? = null
     private var typeOfSorted: Int = NO_SORTED
-
-
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
 
 
     private fun initAlarmsAdapter() {
         myAlarms = ArrayList()
-        //alarms?.add(Alarm("ID", "NAME", "TYPE", "TIME", false, -1))
         val itemDecorator = DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL)
-        itemDecorator.setDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.divider)!!)
+        ContextCompat.getDrawable(requireContext(), R.drawable.divider)
+            ?.let { itemDecorator.setDrawable(it) }
         rvAlarm?.addItemDecoration(itemDecorator)
 
-        alarmAdapter = activity?.let { adapter ->
-            myAlarms?.let { arr ->
-                AlarmAdapter(arr, adapter, this) { _ ->
-
-                }
-            }
-        }
+        alarmAdapter = myAlarms?.let { arr -> AlarmAdapter(arr, requireActivity()) { } }
         rvAlarm?.adapter = alarmAdapter
-        val layoutManager = LinearLayoutManager(activity)
-        rvAlarm?.layoutManager = layoutManager
-
-        alarmAdapter?.notifyDataSetChanged()
-
+        rvAlarm?.layoutManager = LinearLayoutManager(activity)
     }
 
     override fun onCreateView(
@@ -133,99 +86,33 @@ class AlarmsLogFragment : ParentFragment(), OnAdapterListener {
         val view = inflater.inflate(R.layout.fragment_alarm_log, container, false)
 
         rvAlarm = view.findViewById(R.id.rvAlarm)
+        initAlarmsAdapter()
 
         btnCsv = view.findViewById(R.id.btnCsv)
-
         btnCsv?.setOnClickListener {
-            val alarms = populateAlarmsFromLocally()
-            //val csvFile=CsvFile()
-            this.context?.let { it1 ->
-
-                val alarmsStr = alarmsListToCsvFile(alarms, it1)
-                if (activity != null) {
-                    if (writeCsvFile(alarmsStr, requireActivity())) {
-                        activity?.let { it2 -> shareCsv(it2) }
-                        //Toast.makeText(context,"success",Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(context, "failed", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-
-        }
-        ibDeleteSelectedItems = view.findViewById(R.id.ibDeleteSelectedItems)
-        ibDeleteSelectedItems?.setOnClickListener {
-
-            showDeleteDialog()
-
+            exportAlarmsToCsv()
         }
 
         btnFilterSystem = view.findViewById(R.id.btnFilterSystem)
         btnFilterSystem?.setOnClickListener {
-
-            //clear if selected
-            clearSelection()
-
-            this@AlarmsLogFragment.context?.let { it1 ->
-                ContextCompat.getColor(
-                    it1, R.color.green2
-                )
-            }?.let { it2 -> it.setBackgroundColor(it2) }
-
-            this@AlarmsLogFragment.context?.let { it1 ->
-                ContextCompat.getColor(
-                    it1, R.color.white
-                )
-            }?.let { it2 -> (it as Button).setTextColor(it2) }
-
-            btnFilterSystem?.isEnabled = false
-            btnFilterDateTime?.isEnabled = false
-
+            setUIBeforeSorting(it as Button)
             openSortByType(SORT_BY_SYSTEM_KEY, SORT_BY_SYSTEM_REQUEST_CODE)
         }
 
         btnFilterDateTime = view.findViewById(R.id.btnFilterDateTime)
         btnFilterDateTime?.setOnClickListener {
-
-            //clear if selected
-            clearSelection()
-
-            this@AlarmsLogFragment.context?.let { it1 ->
-                ContextCompat.getColor(
-                    it1, R.color.green2
-                )
-            }?.let { it2 -> it.setBackgroundColor(it2) }
-
-            this@AlarmsLogFragment.context?.let { it1 ->
-                ContextCompat.getColor(
-                    it1, R.color.white
-                )
-            }?.let { it2 -> (it as Button).setTextColor(it2) }
-
-            btnFilterSystem?.isEnabled = false
-            btnFilterDateTime?.isEnabled = false
-
+            setUIBeforeSorting(it as Button)
             openSortByType(SORT_BY_DATETIME_KEY, SORT_PICK_DATE_TIME_REQUEST_CODE)
         }
 
         cbIsSelected = view.findViewById(R.id.cbIsSelected)
         cbIsSelected?.setOnCheckedChangeListener { _, isChecked ->
-            if (typeOfSorted == DATE_SORTED || typeOfSorted == CAMERA_SORTED) {
-                mySortedAlarms?.let { toggleItemSelected(it, isChecked) }
-            } else {
-                myAlarms?.let { toggleItemSelected(it, isChecked) }
-            }
+            getShownAlarms()?.let { toggleItemSelected(it, isChecked) }
         }
 
         ibDeleteSelectedItems = view.findViewById(R.id.ibDeleteSelectedItems)
         ibDeleteSelectedItems?.setOnClickListener {
-
-            var alarmCounter = 0
-            if (typeOfSorted == DATE_SORTED || typeOfSorted == CAMERA_SORTED) {
-                mySortedAlarms?.let { it1 -> alarmCounter = getCountItemSelected(it1) }
-            } else {
-                myAlarms?.let { it1 -> alarmCounter = getCountItemSelected(it1) }
-            }
+            val alarmCounter = getShownAlarms()?.count { it.isReadyToDelete } ?: 0
             if (alarmCounter > 0) {
                 showDeleteDialog(alarmCounter)
             } else {
@@ -233,25 +120,40 @@ class AlarmsLogFragment : ParentFragment(), OnAdapterListener {
                     activity,
                     resources.getString(R.string.no_selected_alarms),
                     Toast.LENGTH_LONG
-                )
-                    .show()
+                ).show()
             }
         }
 
         tvReset = view.findViewById(R.id.tvReset)
-        if (tvReset != null) {
-            Linkify.addLinks(tvReset!!, Linkify.WEB_URLS)
-        }
-        //tvReset?.movementMethod = LinkMovementMethod.getInstance()
+        tvReset?.let { Linkify.addLinks(it, Linkify.WEB_URLS) }
         tvReset?.setOnClickListener {
             typeOfSorted = NO_SORTED
             refreshAlarmsFromPref()
         }
         typeOfSorted = NO_SORTED
 
-
         // Inflate the layout for this fragment
         return view
+    }
+
+    //the alarms that are shown now (sorted or all of them)
+    private fun getShownAlarms(): ArrayList<Alarm>? {
+        return if (typeOfSorted == DATE_SORTED || typeOfSorted == CAMERA_SORTED) {
+            mySortedAlarms
+        } else {
+            myAlarms
+        }
+    }
+
+    //write the alarms to csv file and share it
+    private fun exportAlarmsToCsv() {
+        val activity = activity ?: return
+        val alarmsRows = alarmsListToCsvFile(populateAlarmsFromLocally(activity), activity)
+        if (writeCsvFile(alarmsRows, activity)) {
+            shareCsv(activity)
+        } else {
+            Toast.makeText(activity, R.string.error, Toast.LENGTH_SHORT).show()
+        }
     }
 
     //clear the selection of the sorted and normal array
@@ -264,25 +166,15 @@ class AlarmsLogFragment : ParentFragment(), OnAdapterListener {
 
     //toggle selected/unselected alarms
     private fun toggleItemSelected(alarms: ArrayList<Alarm>, isSelected: Boolean) {
-        val iteratorList = alarms.listIterator()
-        while (iteratorList != null && iteratorList.hasNext()) {
-            val item = iteratorList.next()
-            item.isReadyToDelete = isSelected
-            alarmAdapter?.setDetects(alarms)
-            alarmAdapter?.notifyDataSetChanged()
-        }
+        alarms.forEach { it.isReadyToDelete = isSelected }
+        alarmAdapter?.setDetects(alarms)
     }
 
 
     override fun onStart() {
         super.onStart()
-
         setFilter()
-
-        initAlarmsAdapter()
-
         refreshAlarmsFromPref()
-
     }
 
     override fun onStop() {
@@ -291,173 +183,53 @@ class AlarmsLogFragment : ParentFragment(), OnAdapterListener {
     }
 
     private fun refreshAlarmsFromPref() {
-        myAlarms = ArrayList()
+        val alarms = populateAlarmsFromLocally(context) ?: return
+        myAlarms = ArrayList(alarms.sortedWith(compareByDescending { it.timeInMillis }))
 
-        myAlarms = populateAlarmsFromLocally()
-
-        //for testing *************
-//        var tmp = Alarm()
-//        tmp.imgsPath="https://www.sciencemag.org/sites/default/files/styles/article_main_large/public/butterfly_16x9_0.jpg"
-//        tmp.id="6FF8EF7E-7625-419E-ADC8-23EA4778994C"
-//        tmp.timeInMillis=1595849670712
-//        myAlarms?.add(tmp)
-//        *************************
-
-        //show only alarm log from email
-//        val iteratorList = _alarms?.listIterator()
-//        while (iteratorList != null && iteratorList.hasNext()) {
-//            val item = iteratorList.next()
-//            if (item.isCameFromEmail) {
-//                myAlarms?.add(item)
-//            }
-//        }
-
-        myAlarms?.let { myAlarms ->
-            this.myAlarms = ArrayList(myAlarms.sortedWith(compareByDescending { it.timeInMillis }))
-            //myAlarms?.let { alarms?.addAll(it) }
-
-            when (typeOfSorted) {
-                DATE_SORTED -> {
-                    sortByDateAlarm()
-                    alarmAdapter?.setDetects(mySortedAlarms)
-                    alarmAdapter?.notifyDataSetChanged()
-                }
-
-                CAMERA_SORTED -> {
-                    sortByCamerasAlarm()
-                    alarmAdapter?.setDetects(mySortedAlarms)
-                    alarmAdapter?.notifyDataSetChanged()
-                }
-
-                else -> {
-                    alarmAdapter?.setDetects(this.myAlarms)
-                    alarmAdapter?.notifyDataSetChanged()
-                }
+        when (typeOfSorted) {
+            DATE_SORTED -> {
+                sortByDateAlarm()
+                alarmAdapter?.setDetects(mySortedAlarms)
             }
-        }
 
+            CAMERA_SORTED -> {
+                sortByCamerasAlarm()
+                alarmAdapter?.setDetects(mySortedAlarms)
+            }
+
+            else -> alarmAdapter?.setDetects(myAlarms)
+        }
     }
 
     //sort the alarm by date time
     private fun sortByDateAlarm() {
-        if (toCalendar == null || fromCalendar == null) {
-            return
-        }
-        mySortedAlarms = ArrayList()
-        val iteratorList = myAlarms?.listIterator()
-        while (iteratorList != null && iteratorList.hasNext()) {
-            val item = iteratorList.next()
-            if (item.timeInMillis != null
-                && item.timeInMillis!! <= toCalendar!!.timeInMillis
-                && item.timeInMillis!! >= fromCalendar!!.timeInMillis
-            )
-                mySortedAlarms?.add(item)
+        val from = fromCalendar?.timeInMillis ?: return
+        val to = toCalendar?.timeInMillis ?: return
+        mySortedAlarms = myAlarms?.filterTo(ArrayList()) {
+            val time = it.timeInMillis
+            time != null && time in from..to
         }
     }
 
     //sort the alarm by sorter camera
     private fun sortByCamerasAlarm() {
-        if (mySortedCameras == null) {
-            return
-        }
-
-        mySortedAlarms = ArrayList()
-        val iteratorList = myAlarms?.listIterator()
-        while (iteratorList != null && iteratorList.hasNext()) {
-            val item = iteratorList.next()
-            if (isAlarmSorted(item, mySortedCameras))
-                mySortedAlarms?.add(item)
-        }
+        val sortedCameras = mySortedCameras ?: return
+        mySortedAlarms = myAlarms?.filterTo(ArrayList()) { isAlarmSorted(it, sortedCameras) }
     }
 
 
     //check if the the alarm is sorted
-    private fun isAlarmSorted(itemP: Alarm, mySystemSort: ArrayList<SystemSort>?): Boolean {
-
-        val iteratorList = mySystemSort?.listIterator()
-        while (iteratorList != null && iteratorList.hasNext()) {
-            val item = iteratorList.next()
-            if (itemP.zone.equals(item.unit) && item.isSorted != null && item.isSorted!!) {
-                return true
-            }
-        }
-        return false
+    private fun isAlarmSorted(alarm: Alarm, systemSort: ArrayList<SystemSort>): Boolean {
+        return systemSort.any { alarm.zone == it.unit && it.isSorted == true }
     }
-
-//    private fun refreshAlarmsFromPref() {
-//        myAlarms = ArrayList()
-//
-//        val _alarms = populateAlarmsFromLocally()
-//        _alarms?.let { myAlarms?.addAll(it) }
-//
-//        alarmAdapter?.setDetects(myAlarms)
-//        alarmAdapter?.notifyDataSetChanged()
-//    }
-
-    //get the alarms from locally
-    private fun populateAlarmsFromLocally(): ArrayList<Alarm>? {
-        val alarms: ArrayList<Alarm>?
-        val alarmListStr = getStringInPreference(context, ALARM_LIST_KEY_PREF, ERROR_RESP)
-
-        alarms = if (alarmListStr.equals(ERROR_RESP)) {
-            ArrayList()
-        } else {
-            alarmListStr?.let { convertJsonToAlarmList(it) }
-        }
-        return alarms
-    }
-
-    //store the detectors to locally
-    private fun storeAlarmsToLocally(alarms: ArrayList<Alarm>) {
-        // sort the list of events by date in descending
-        val alarms = ArrayList(alarms.sortedWith(compareByDescending { it.timeInMillis }))
-        if (alarms != null) {
-            val alarmsJsonStr = convertToAlarmsGson(alarms)
-            setStringInPreference(activity, ALARM_LIST_KEY_PREF, alarmsJsonStr)
-        }
-    }
-
-    //show dialog before delete alarms log
-    private fun showDeleteDialog() {
-        val builder = AlertDialog.Builder(context)
-        builder.setTitle(requireContext().resources.getString(R.string.delete_all))
-        val yes = requireContext().resources.getString(R.string.yes)
-        val no = requireContext().resources.getString(R.string.no)
-        builder.setMessage(requireContext().resources.getString(R.string.do_you_really_want_delete_all_alarm))
-            .setCancelable(false)
-        builder.setPositiveButton(yes) { dialog, which ->
-
-            //remove all alarms log
-            myAlarms = populateAlarmsFromLocally()
-            myAlarms?.clear()
-            myAlarms?.let { alarms -> storeAlarmsToLocally(alarms) }
-            refreshAlarmsFromPref()
-            dialog.dismiss()
-
-        }
-
-
-        // Display a negative button on alert dialog
-        builder.setNegativeButton(no) { dialog, which ->
-            dialog.dismiss()
-        }
-        val alert = builder.create()
-        alert.show()
-    }
-
 
     private fun setFilter() {
-        val filter = IntentFilter(CREATE_ALARM_KEY)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            activity?.registerReceiver(usbReceiver, filter, RECEIVER_EXPORTED)
-        } else {
-            ContextCompat.registerReceiver(
-                requireActivity(),
-                usbReceiver,
-                filter,
-                ContextCompat.RECEIVER_NOT_EXPORTED
-            )
-        }
+        ContextCompat.registerReceiver(
+            requireActivity(),
+            usbReceiver,
+            IntentFilter(CREATE_ALARM_KEY),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
     }
 
     private val usbReceiver = object : BroadcastReceiver() {
@@ -469,126 +241,72 @@ class AlarmsLogFragment : ParentFragment(), OnAdapterListener {
         }
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    fun onButtonPressed(uri: Uri) {
-        //listener?.onFragmentInteraction(uri)
-    }
-
-
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment AlarmLogFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            AlarmsLogFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
-    }
-
     //open fragment dialog to sort the list of alarm log
     private fun openSortByType(type: Int, requestCode: String) {
 
         val fr = SystemSortDialogFragment()
 
-        //deliver selected camera to continue add data
-        //val cameraStr = convertToGson(camera)
         val bdl = Bundle()
         bdl.putInt(SORT_TYPE_KEY, type)
         fr.arguments = bdl
-        //fr.setTargetFragment(this, requestCode)
-        val fm = parentFragmentManager
-
 
         // In the parent fragment
         parentFragmentManager.setFragmentResultListener(
             requestCode,
             viewLifecycleOwner
-        ) { key, bundle ->
+        ) { _, bundle ->
             val resultCode = bundle.getInt(RESULT_CODE)
 
             setUIAfterSorting()
 
+            if (resultCode != Activity.RESULT_OK) {
+                return@setFragmentResultListener
+            }
+
             if (requestCode == SORT_BY_SYSTEM_REQUEST_CODE) {
-                if (resultCode == Activity.RESULT_OK) {
-                    val mySysSortStr =
-                        bundle.getString(CAMERA_KEY)//intent?.extras?.getString(CAMERA_KEY, null)
-                    mySysSortStr?.let {
-                        mySortedCameras = convertJsonToSystemSortList(mySysSortStr)
-                    }
-                    if (mySortedCameras != null) {
-                        typeOfSorted = CAMERA_SORTED
-                        refreshAlarmsFromPref()
-                    }
+                bundle.getString(CAMERA_KEY)?.let {
+                    mySortedCameras = convertJsonToSystemSortList(it)
+                }
+                if (mySortedCameras != null) {
+                    typeOfSorted = CAMERA_SORTED
+                    refreshAlarmsFromPref()
                 }
             } else if (requestCode == SORT_PICK_DATE_TIME_REQUEST_CODE) {
-                if (resultCode == Activity.RESULT_OK) {
-                    //get the start date and end date for sorting
-                    try {
-                        fromCalendar = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            bundle.getSerializable(FROM_CALENDAR, Calendar::class.java)
-                        } else {
-                            bundle.getSerializable(FROM_CALENDAR) as Calendar
-                        }
+                //get the start date and end date for sorting
+                fromCalendar = BundleCompat.getSerializable(bundle, FROM_CALENDAR, Calendar::class.java)
+                toCalendar = BundleCompat.getSerializable(bundle, TO_CALENDAR, Calendar::class.java)
 
-                        //convert to UTS set +3 to hours
-                        //fromCalendar?.add(Calendar.HOUR, HOUR_OFFSET)//to sort UTC
-
-                        toCalendar = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            bundle.getSerializable(TO_CALENDAR, Calendar::class.java)
-                        } else {
-                            bundle.getSerializable(TO_CALENDAR) as Calendar
-                        }
-
-                        //convert to UTS set +3 to hours
-                        //toCalendar?.add(Calendar.HOUR, HOUR_OFFSET)//to sort UTC
-
-                        if (fromCalendar != null && toCalendar != null) {
-                            typeOfSorted = DATE_SORTED
-                            refreshAlarmsFromPref()
-                        }
-                        activity?.let { it1 ->
-                            getStringFromCalendar(
-                                fromCalendar!!,
-                                "dd/MM/yy kk:mm:ss",
-                                it1
-                            )
-                        }
-                        activity?.let { it1 ->
-                            getStringFromCalendar(
-                                toCalendar!!,
-                                "dd/MM/yy kk:mm:ss",
-                                it1
-                            )
-                        }
-                        //Log.d("testCalendar", fromDateStr)
-                        //Log.d("testCalendar", toDateStr)
-                        //Log.d("testCalendar", getOffsetHour().toString())
-                    } catch (ex: Exception) {
-                        Toast.makeText(
-                            activity,
-                            resources.getString(R.string.error),
-                            Toast.LENGTH_LONG
-                        )
-                            .show()
-                    }
+                if (fromCalendar != null && toCalendar != null) {
+                    typeOfSorted = DATE_SORTED
+                    refreshAlarmsFromPref()
+                } else {
+                    Toast.makeText(
+                        activity,
+                        resources.getString(R.string.error),
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
-            // Handle the result
         }
 
-        val fragmentTransaction = fm.beginTransaction()
-        fragmentTransaction.add(R.id.flSortBySystemCamera, fr)
-        fragmentTransaction.commit()
+        parentFragmentManager.beginTransaction()
+            .add(R.id.flSortBySystemCamera, fr)
+            .commit()
+    }
+
+    /**
+     * set UI before sorting (mark the pressed button and disable the sort buttons)
+     */
+    private fun setUIBeforeSorting(pressedButton: Button) {
+        //clear if selected
+        clearSelection()
+
+        val context = context ?: return
+        pressedButton.setBackgroundColor(ContextCompat.getColor(context, R.color.green2))
+        pressedButton.setTextColor(ContextCompat.getColor(context, R.color.white))
+
+        btnFilterSystem?.isEnabled = false
+        btnFilterDateTime?.isEnabled = false
     }
 
     /**
@@ -598,47 +316,14 @@ class AlarmsLogFragment : ParentFragment(), OnAdapterListener {
         btnFilterSystem?.isEnabled = true
         btnFilterDateTime?.isEnabled = true
 
-        //change the color of the button
-        this@AlarmsLogFragment.context?.let { it1 ->
-            ContextCompat.getColor(
-                it1, R.color.gray11
-            )
-        }?.let { it2 -> btnFilterSystem?.setBackgroundColor(it2) }
-
-
-        this@AlarmsLogFragment.context?.let { it1 ->
-            ContextCompat.getColor(
-                it1, R.color.black
-            )
-        }?.let { it2 -> (btnFilterSystem as Button).setTextColor(it2) }
-
-        //change the color of the button
-        this@AlarmsLogFragment.context?.let { it1 ->
-            ContextCompat.getColor(
-                it1, R.color.gray11
-            )
-        }?.let { it2 -> btnFilterDateTime?.setBackgroundColor(it2) }
-
-        this@AlarmsLogFragment.context?.let { it1 ->
-            ContextCompat.getColor(
-                it1, R.color.black
-            )
-        }?.let { it2 -> (btnFilterDateTime as Button).setTextColor(it2) }
-
-    }
-
-    //get the counter of selected alarms
-    private fun getCountItemSelected(alarms: ArrayList<Alarm>): Int {
-        val iteratorList = alarms.listIterator()
-        var counter = 0
-        while (iteratorList != null && iteratorList.hasNext()) {
-            val item = iteratorList.next()
-            if (item.isReadyToDelete) {
-                counter++
-            }
-
-        }
-        return counter
+        //change the color of the buttons
+        val context = context ?: return
+        val backgroundColor = ContextCompat.getColor(context, R.color.gray11)
+        val textColor = ContextCompat.getColor(context, R.color.black)
+        btnFilterSystem?.setBackgroundColor(backgroundColor)
+        btnFilterSystem?.setTextColor(textColor)
+        btnFilterDateTime?.setBackgroundColor(backgroundColor)
+        btnFilterDateTime?.setTextColor(textColor)
     }
 
     //show dialog before delete alarms
@@ -647,17 +332,15 @@ class AlarmsLogFragment : ParentFragment(), OnAdapterListener {
         builder.setTitle(alarmCounter.toString() + " " + requireContext().resources.getString(R.string.selected_alarms))
         val yes = requireContext().resources.getString(R.string.yes)
         val no = requireContext().resources.getString(R.string.no)
-        builder.setMessage(requireContext().resources.getString(R.string.do_you_realy_want_delete_selected_alarm))
+        builder.setMessage(requireContext().resources.getString(R.string.do_you_really_want_delete_selected_alarm))
             .setCancelable(false)
-        builder.setPositiveButton(yes) { dialog, which ->
+        builder.setPositiveButton(yes) { dialog, _ ->
 
             //delete from main array and also from sort array
-            myAlarms?.let { deleteItemSelected(it) }
-            mySortedAlarms?.let { deleteItemSelected(it) }
+            myAlarms?.removeAll { it.isReadyToDelete }
+            mySortedAlarms?.removeAll { it.isReadyToDelete }
             //save the changing in shared preference
-            if (context != null && myAlarms != null) {
-                myAlarms?.let { storeAlarmsToLocally(it, requireContext()) }
-            }
+            myAlarms?.let { storeAlarmsToLocally(it, context) }
 
             clearSelection()
 
@@ -668,26 +351,10 @@ class AlarmsLogFragment : ParentFragment(), OnAdapterListener {
 
 
         // Display a negative button on alert dialog
-        builder.setNegativeButton(no) { dialog, which ->
+        builder.setNegativeButton(no) { dialog, _ ->
             dialog.dismiss()
         }
         val alert = builder.create()
         alert.show()
     }
-
-    //delete the selected alarms
-    private fun deleteItemSelected(alarms: ArrayList<Alarm>): Int {
-        val iteratorList = alarms.listIterator()
-        var counter = 0
-        while (iteratorList != null && iteratorList.hasNext()) {
-            val item = iteratorList.next()
-            if (item.isReadyToDelete) {
-                iteratorList.remove()
-                counter++
-            }
-
-        }
-        return counter
-    }
-
 }

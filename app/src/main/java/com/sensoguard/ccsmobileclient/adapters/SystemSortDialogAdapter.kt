@@ -1,6 +1,6 @@
 package com.sensoguard.ccsmobileclient.adapters
 
-import android.content.Context
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,17 +11,11 @@ import com.sensoguard.ccsmobileclient.R
 import com.sensoguard.ccsmobileclient.classes.SystemSort
 
 class SystemSortDialogAdapter(
-    private var systems: ArrayList<SystemSort>,
-    val context: Context,
-    var itemClick: (SystemSort) -> Unit
+    private var systems: ArrayList<SystemSort>
 ) : RecyclerView.Adapter<SystemSortDialogAdapter.ViewHolder>() {
 
 
-    companion object;
-
-
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-
         holder.bindReservation((systems[position]))
         holder.setIsRecyclable(false)
     }
@@ -34,48 +28,32 @@ class SystemSortDialogAdapter(
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_system_filter_dialog, parent, false)
 
-
-
-        return ViewHolder(view, itemClick)
+        return ViewHolder(view)
     }
 
-    fun setDetects(_detectors: ArrayList<SystemSort>?) {
-        _detectors?.let { systems = it }
-        //TODO how to define with this
+    /**
+     * replace the systems that are shown
+     */
+    //the whole list is replaced, so all the items should be refreshed
+    @SuppressLint("NotifyDataSetChanged")
+    fun setDetects(systems: ArrayList<SystemSort>?) {
+        systems?.let { this.systems = it }
+        notifyDataSetChanged()
     }
 
-    inner class ViewHolder(
-        private val _itemView: View,
-        private val itemClick: (SystemSort) -> Unit
-    ) :
-        RecyclerView.ViewHolder(_itemView) {
-        //private var tvId: TextView? = null
+    class ViewHolder(private val _itemView: View) : RecyclerView.ViewHolder(_itemView) {
         private var tvName: TextView? = null
         private var togIsSelected: ToggleButton? = null
 
-
-//        init {
-//            itemView.setOnClickListener {
-//                //itemClick.invoke(sensors[adapterPosition])
-//            }
-//        }
-
-
         fun bindReservation(systemSort: SystemSort) {
-            //tvId = _itemView.findViewById(R.id.tvId)
             tvName = _itemView.findViewById(R.id.tvName)
-
             togIsSelected = _itemView.findViewById(R.id.togIsSelected)
-
 
             togIsSelected?.setOnCheckedChangeListener { _, isChecked ->
                 systemSort.isSorted = isChecked
             }
 
-
-            //tvId?.text = systemSort.getId()
             tvName?.text = systemSort.unit
-
         }
     }
 }

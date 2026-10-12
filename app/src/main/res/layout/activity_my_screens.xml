@@ -13,7 +13,6 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/red"
             android:elevation="4dp"
             android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
@@ -29,66 +28,34 @@
         <include layout="@layout/on_off_connect_device"/>
 
     </androidx.appcompat.widget.Toolbar>
-    <!--<androidx.appcompat.widget.Toolbar-->
-
-            <!--android:id="@+id/toolbar"-->
-            <!--app:contentInsetLeft="0dp"-->
-            <!--app:contentInsetStart="0dp"-->
-            <!--app:contentInsetRight="0dp"-->
-            <!--app:contentInsetEnd="0dp"-->
-            <!--app:layout_constraintLeft_toLeftOf="parent"-->
-            <!--app:layout_constraintRight_toRightOf="parent"-->
-            <!--app:layout_constraintTop_toTopOf="parent"-->
-            <!--android:layout_height="wrap_content" android:layout_width="match_parent"/>-->
 
 
-    <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/tvShowLogs"
-                android:text="sansoGaurd"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:visibility="gone"/>
-
-
-
-
-
-    <com.sensoguard.ccsmobileclient.classes.NonSwipeAbleViewPager
-            android:id="@+id/vPager"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+    <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tab_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginTop="?attr/actionBarSize"
+            app:layout_constraintTop_toBottomOf="@id/toolbar"
+            app:tabTextColor="@color/white1"
+            app:tabSelectedTextColor="@color/black"
+            app:tabIndicatorColor="@color/black"
+            app:tabIndicatorHeight="4dp"
+            app:tabIndicatorGravity="bottom"
+            app:tabIndicatorFullWidth="true"
+            app:tabPaddingStart="0dp"
+            app:tabPaddingEnd="0dp"
+            />
 
-            >
-
-
-        <com.google.android.material.tabs.TabLayout
-                android:id="@+id/tab_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:tabTextColor="@color/white1"
-                app:tabSelectedTextColor="@color/black"
-                app:tabIndicatorColor="@color/black"
-                app:tabIndicatorHeight="4dp"
-                app:tabIndicatorGravity="bottom"
-                app:tabIndicatorFullWidth="true"
-                app:tabPaddingStart="0dp"
-                app:tabPaddingEnd="0dp"
-
-                />
-
-
-    </com.sensoguard.ccsmobileclient.classes.NonSwipeAbleViewPager>
-
-
-    <!--</androidx.appcompat.widget.Toolbar>-->
-
+    <!-- the screens are changed only by the tabs (not by swipe) -->
+    <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/vPager"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tab_layout"
+            app:layout_constraintBottom_toBottomOf="parent"
+            />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-

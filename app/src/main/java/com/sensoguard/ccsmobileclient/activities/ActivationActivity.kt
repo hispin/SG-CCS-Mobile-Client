@@ -1,12 +1,9 @@
 package com.sensoguard.ccsmobileclient.activities
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatEditText
@@ -17,16 +14,15 @@ import com.sensoguard.ccsmobileclient.global.ACTIVATION_CODE_KEY
 import com.sensoguard.ccsmobileclient.global.IMEI_KEY
 import com.sensoguard.ccsmobileclient.global.TEST_CODE
 import com.sensoguard.ccsmobileclient.global.setStringInPreference
-import org.apache.commons.lang3.StringUtils
 
 
 class ActivationActivity : ParentActivity() {
 
     private var myImei: String? = null
-    var tvImei: AppCompatTextView? = null
-    var btnShare: AppCompatButton? = null
-    var etEnterCode: AppCompatEditText? = null
-    var btnSignIn: AppCompatButton? = null
+    private var tvImei: AppCompatTextView? = null
+    private var btnShare: AppCompatButton? = null
+    private var etEnterCode: AppCompatEditText? = null
+    private var btnSignIn: AppCompatButton? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,11 +34,9 @@ class ActivationActivity : ParentActivity() {
         myImei = intent.getStringExtra(IMEI_KEY)
 
         tvImei?.text = myImei
-
-
     }
 
-    fun init(){
+    private fun init() {
         tvImei = findViewById(R.id.tvImei)
         btnShare = findViewById(R.id.btnShare)
 
@@ -54,41 +48,36 @@ class ActivationActivity : ParentActivity() {
 
         etEnterCode = findViewById(R.id.etEnterCode)
 
-
-        etEnterCode?.setOnEditorActionListener(object : TextView.OnEditorActionListener {
-            override fun onEditorAction(v: TextView?, actionId: Int, event: KeyEvent?): Boolean {
-                if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    // do something, e.g. set your TextView here via .setText()
-                    val imm=v?.context?.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                    imm.hideSoftInputFromWindow(v.windowToken, 0)
-
-                    return true
-                }
-                return false
+        etEnterCode?.setOnEditorActionListener { v, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                //hide the keyboard
+                val imm = v.context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(v.windowToken, 0)
+                true
+            } else {
+                false
             }
-        })
+        }
     }
 
     private fun onClickSignIn() {
-        btnSignIn?.setOnClickListener{
+        btnSignIn?.setOnClickListener {
 
             if (!validIsEmpty(etEnterCode)) {
                 return@setOnClickListener
             }
 
-            val myActivateCode=CryptoHandler.getInstance().encrypt(myImei)
+            val myActivateCode = CryptoHandler.getInstance().encrypt(myImei)
             //if the activate code that came from user is equal to activate code that calculated by IMEI ,then start the app
-            val tmp=etEnterCode?.text.toString()
+            val enteredCode = etEnterCode?.text.toString()
 
+            val myActivateCodeWhitespace = myActivateCode.filterNot { it.isWhitespace() }
 
-            val myActivateCodeWhitespace = StringUtils.deleteWhitespace(myActivateCode)
-
-            //if(myActivateCode.startsWith(tmp)){
-            if (myActivateCodeWhitespace == tmp || tmp.startsWith(TEST_CODE)) {
-                setStringInPreference(applicationContext,ACTIVATION_CODE_KEY,etEnterCode?.text.toString())
+            if (myActivateCodeWhitespace == enteredCode || enteredCode.startsWith(TEST_CODE)) {
+                setStringInPreference(applicationContext, ACTIVATION_CODE_KEY, enteredCode)
                 val inn = Intent(this, MainActivity::class.java)
                 inn.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                startActivity(Intent(inn))
+                startActivity(inn)
             } else {
                 Toast.makeText(
                     this,
@@ -101,32 +90,25 @@ class ActivationActivity : ParentActivity() {
 
     //check if the field of edit text is empty
     private fun validIsEmpty(editText: AppCompatEditText?): Boolean {
-        var isValid = true
-
         if (editText?.text.isNullOrBlank()) {
             editText?.error = resources.getString(R.string.empty_field_error)
-            isValid = false
+            return false
         }
-
-        return isValid
+        return true
     }
 
 
     private fun onClickShare() {
-        btnShare?.setOnClickListener{
+        btnShare?.setOnClickListener {
             //share the IMEI of the device
             val sharingIntent = Intent(Intent.ACTION_SEND)
             sharingIntent.type = "text/plain"
-            val shareBody = myImei
             sharingIntent.putExtra(
                 Intent.EXTRA_SUBJECT,
                 resources.getString(R.string.email_subject)
             )
-            sharingIntent.putExtra(Intent.EXTRA_TEXT, shareBody)
+            sharingIntent.putExtra(Intent.EXTRA_TEXT, myImei)
             startActivity(Intent.createChooser(sharingIntent, "Share via"))
         }
     }
-
-
-
 }

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lint>
+    <!-- aapt2 versions the adaptive icon to v26 anyway, without the v26 folder the png icons are required -->
+    <issue id="ObsoleteSdkInt">
+        <ignore path="src/main/res/mipmap-anydpi-v26" />
+    </issue>
+
+    <!-- the upgrade to targetSdk 37 has been reviewed (behavior changes of android 17) and tested -->
+    <issue id="EditedTargetSdkVersion" severity="ignore" />
+</lint>

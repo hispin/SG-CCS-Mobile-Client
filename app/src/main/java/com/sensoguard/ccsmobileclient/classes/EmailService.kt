@@ -1,8 +1,15 @@
 package com.sensoguard.ccsmobileclient.classes
 
 import android.util.Log
-import java.util.*
-import javax.mail.*
+import java.util.Calendar
+import java.util.Properties
+import javax.mail.Address
+import javax.mail.Authenticator
+import javax.mail.Message
+import javax.mail.MessagingException
+import javax.mail.PasswordAuthentication
+import javax.mail.Session
+import javax.mail.Transport
 import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeBodyPart
 import javax.mail.internet.MimeMessage
@@ -21,72 +28,50 @@ class EmailService(private val server: String, private val port: Int) {
     class UserPassAuthenticator(private val username: String, private val password: String) :
         Authenticator() {
         override fun getPasswordAuthentication(): PasswordAuthentication {
-            //return GMailAuthenticator(username, password)
             return PasswordAuthentication(username, password)
         }
     }
 
     fun send(email: Email, isSSL: Boolean) {
+        //the values of the properties must be strings (other values are ignored by javax.mail)
         val props = Properties()
-        //Log.d("", props.propertyNames().toString())
         props["mail.smtp.auth"] = "true"
-        props["mail.user"] = email.from
+        props["mail.user"] = email.from.toString()
         props["mail.smtp.host"] = server
-        props["mail.smtp.port"] = port
+        props["mail.smtp.port"] = port.toString()
         props["mail.smtp.starttls.enable"] = "true"
-
         props["mail.smtp.ssl.enable"] = isSSL.toString()
-        if (isSSL) {
-            props["mail.smtp.ssl.trust"] = server
-        } else {
-            props["mail.smtp.ssl.trust"] = "*"
-        }
+        //verify the certificate of the mail server (protect the password of the account)
+        props["mail.smtp.ssl.checkserveridentity"] = "true"
         props["mail.mime.charset"] = "UTF-8"
-        // Bugs fixed: Replace  Session.getDefaultInstance because it save previous data of properties
-        val msg: Message = MimeMessage(Session.getInstance(props, email.auth))
-        //val msg: Message = MimeMessage(Session.getDefaultInstance(props, email.auth))
-        //val msg: Message = MimeMessage(Session.getInstance(props, email.auth))
-        msg.setFrom(email.from)
-        msg.sentDate = Calendar.getInstance().time
-        msg.setRecipients(Message.RecipientType.TO, email.toList.toTypedArray())
-//      msg.setRecipients(Message.RecipientType.CC, email.ccList.toTypedArray())
-//      msg.setRecipients(Message.RecipientType.BCC, email.bccList.toTypedArray())
-        msg.replyTo = arrayOf(email.from)
 
-        msg.addHeader("X-Mailer", CLIENT_NAME)
-        msg.addHeader("Precedence", "bulk")
-        //msg.addHeader("Content-Type","text/plain; charset=\"utf-8\"")
-
-        msg.subject = email.subject
-
-
-        msg.setContent(MimeMultipart().apply {
-            addBodyPart(MimeBodyPart().apply {
-                setText(email.body, "UTF-8")//"text/html; charset=utf-8")//"iso-8859-1")
-                //setContent(email.htmlBody, "text/html; charset=UTF-8")
-            })
-        })
         try {
+            // Bugs fixed: Replace  Session.getDefaultInstance because it save previous data of properties
+            val msg: Message = MimeMessage(Session.getInstance(props, email.auth))
+            msg.setFrom(email.from)
+            msg.sentDate = Calendar.getInstance().time
+            msg.setRecipients(Message.RecipientType.TO, email.toList.toTypedArray())
+            msg.replyTo = arrayOf(email.from)
+
+            msg.addHeader("X-Mailer", CLIENT_NAME)
+            msg.addHeader("Precedence", "bulk")
+
+            msg.subject = email.subject
+
+            msg.setContent(MimeMultipart().apply {
+                addBodyPart(MimeBodyPart().apply {
+                    setText(email.body, "UTF-8")
+                })
+            })
+
             Transport.send(msg)
-            msg.setFlag(Flags.Flag.DELETED, true)
-            //Log.d("", "test")
-        } catch (ex: SendFailedException) {
-            Log.d("testEmail", ex.message.toString())
-            Log.d("testEmail", ex.cause.toString())
-            msg.setFlag(Flags.Flag.DELETED, true)
         } catch (ex: MessagingException) {
-            Log.d("testEmail", ex.message.toString())
-            Log.d("testEmail", ex.cause.toString())
-            msg.setFlag(Flags.Flag.DELETED, true)
+            Log.e(TAG, "failed to send the email", ex)
         }
-//        catch (ex : Exception){
-//            Log.d("testEmail", ex.message.toString())
-//            Log.d("testEmail", ex.cause.toString())
-//            msg.setFlag(Flags.Flag.DELETED, true)
-//        }
     }
 
     companion object {
+        private const val TAG = "EmailService"
         const val CLIENT_NAME = "Android StackOverflow programmatic email"
     }
 }

@@ -1,21 +1,27 @@
 package com.sensoguard.ccsmobileclient.adapters
 
+import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import com.sensoguard.ccsmobileclient.R
 import com.sensoguard.ccsmobileclient.classes.Alarm
 import com.sensoguard.ccsmobileclient.global.getStrDateTimeByMilliSeconds
-import com.sensoguard.ccsmobileclient.interfaces.OnAdapterListener
 
-class AlarmAdapter (private var alarms: ArrayList<Alarm>, val context: Context, val onAdapterListener: OnAdapterListener, var itemClick: (Alarm) -> Unit) : RecyclerView.Adapter<AlarmAdapter.ViewHolder>() {
+class AlarmAdapter(
+    private var alarms: ArrayList<Alarm>,
+    val context: Context,
+    var itemClick: (Alarm) -> Unit
+) : RecyclerView.Adapter<AlarmAdapter.ViewHolder>() {
 
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -29,16 +35,19 @@ class AlarmAdapter (private var alarms: ArrayList<Alarm>, val context: Context, 
 
     override fun onCreateViewHolder(parent: ViewGroup, p1: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(
-                R.layout.alarm_item, parent, false)
-
+            .inflate(R.layout.alarm_item, parent, false)
 
         return ViewHolder(view, itemClick)
     }
 
-    fun setDetects(_alarm: ArrayList<Alarm>?) {
-        _alarm?.let { alarms = it }
-        //TODO how to define with this
+    /**
+     * replace the alarms that are shown
+     */
+    //the whole list is replaced, so all the items should be refreshed
+    @SuppressLint("NotifyDataSetChanged")
+    fun setDetects(alarms: ArrayList<Alarm>?) {
+        alarms?.let { this.alarms = it }
+        notifyDataSetChanged()
     }
 
     inner class ViewHolder(private val _itemView: View, private val itemClick: (Alarm) -> Unit) :
@@ -49,28 +58,26 @@ class AlarmAdapter (private var alarms: ArrayList<Alarm>, val context: Context, 
         private var tvTime: TextView? = null
         private var tvCoordinates: TextView? = null
         private var ivOpenGoogleMap: ImageView? = null
-
-        //TODO press twice
         private var tvType: TextView? = null
 
 
         init {
             itemView.setOnClickListener {
-                itemClick.invoke(alarms[adapterPosition])
+                val position = bindingAdapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    itemClick.invoke(alarms[position])
+                }
             }
-        }
 
-        init {
             itemView.setOnLongClickListener {
-
-                //toggle the status of ready to delete
-                alarms[adapterPosition].isReadyToDelete = !alarms[adapterPosition].isReadyToDelete
-                notifyItemChanged(adapterPosition, alarms[adapterPosition])
-
+                val position = bindingAdapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    //toggle the status of ready to delete
+                    alarms[position].isReadyToDelete = !alarms[position].isReadyToDelete
+                    notifyItemChanged(position, alarms[position])
+                }
                 return@setOnLongClickListener false
-
             }
-
         }
 
 
@@ -83,25 +90,17 @@ class AlarmAdapter (private var alarms: ArrayList<Alarm>, val context: Context, 
             tvCoordinates = _itemView.findViewById(R.id.tvCoordinates)
             ivOpenGoogleMap = _itemView.findViewById(R.id.ivOpenGoogleMap)
 
-            if (alarm.isArmed != null
-                && alarm.isArmed!!
-                && alarm.isLocallyDefined != null
-                && alarm.isLocallyDefined
-            ) {
-                tvZone?.setTextColor(ContextCompat.getColor(context, R.color.red))
-                tvDate?.setTextColor(ContextCompat.getColor(context, R.color.red))
-                tvHub?.setTextColor(ContextCompat.getColor(context, R.color.red))
-                tvType?.setTextColor(ContextCompat.getColor(context, R.color.red))
-                tvTime?.setTextColor(ContextCompat.getColor(context, R.color.red))
-                tvCoordinates?.setTextColor(ContextCompat.getColor(context, R.color.red))
+            val textColor = if (alarm.isArmed == true && alarm.isLocallyDefined) {
+                ContextCompat.getColor(context, R.color.red)
             } else {
-                tvZone?.setTextColor(ContextCompat.getColor(context, R.color.black))
-                tvDate?.setTextColor(ContextCompat.getColor(context, R.color.black))
-                tvHub?.setTextColor(ContextCompat.getColor(context, R.color.black))
-                tvType?.setTextColor(ContextCompat.getColor(context, R.color.black))
-                tvTime?.setTextColor(ContextCompat.getColor(context, R.color.black))
-                tvCoordinates?.setTextColor(ContextCompat.getColor(context, R.color.black))
+                ContextCompat.getColor(context, R.color.black)
             }
+            tvZone?.setTextColor(textColor)
+            tvDate?.setTextColor(textColor)
+            tvHub?.setTextColor(textColor)
+            tvType?.setTextColor(textColor)
+            tvTime?.setTextColor(textColor)
+            tvCoordinates?.setTextColor(textColor)
 
 
             tvDate?.text =
@@ -122,30 +121,30 @@ class AlarmAdapter (private var alarms: ArrayList<Alarm>, val context: Context, 
             }
             tvType?.text = alarm.type
 
-            val tmp = "${alarm.latitude} , ${alarm.longitude}"
-            tvCoordinates?.text = tmp
+            val coordinates = "${alarm.latitude} , ${alarm.longitude}"
+            tvCoordinates?.text = coordinates
 
             ivOpenGoogleMap?.setOnClickListener {
                 openGoogleMap(alarm.latitude, alarm.longitude)
             }
 
             //set selected/unselected
-            if (alarm.isReadyToDelete) {
-                itemView.alpha = 0.5F
-            } else {
-                itemView.alpha = 1.0F
-            }
+            itemView.alpha = if (alarm.isReadyToDelete) 0.5F else 1.0F
         }
 
         /**
          * open google map to navigation
          */
         private fun openGoogleMap(latitude: Double?, longitude: Double?) {
-            val gmmIntentUri =
-                Uri.parse("google.navigation:q=$latitude,$longitude&mode=d")
+            val gmmIntentUri = "google.navigation:q=$latitude,$longitude&mode=d".toUri()
             val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
             mapIntent.setPackage("com.google.android.apps.maps")
-            context.startActivity(mapIntent)
+            try {
+                context.startActivity(mapIntent)
+            } catch (ex: ActivityNotFoundException) {
+                //google maps is not installed
+                Toast.makeText(context, R.string.error, Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }

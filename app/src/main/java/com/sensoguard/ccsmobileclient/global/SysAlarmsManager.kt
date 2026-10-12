@@ -3,31 +3,27 @@ package com.sensoguard.ccsmobileclient.global
 import android.content.Context
 import com.sensoguard.ccsmobileclient.classes.Alarm
 import com.sensoguard.ccsmobileclient.classes.AlarmSensor
-import java.util.*
+import java.util.Calendar
 
 //get the alarms from locally
-fun populateAlarmsFromLocally(context: Context): ArrayList<Alarm>? {
-    val alarms: ArrayList<Alarm>?
+fun populateAlarmsFromLocally(context: Context?): ArrayList<Alarm>? {
     val alarmListStr = getStringInPreference(context, ALARM_LIST_KEY_PREF, ERROR_RESP)
 
-    alarms = if (alarmListStr.equals(ERROR_RESP)) {
+    return if (alarmListStr == null || alarmListStr == ERROR_RESP) {
         ArrayList()
     } else {
-        alarmListStr?.let { convertJsonToAlarmList(it) }
+        convertJsonToAlarmList(alarmListStr)
     }
-    return alarms
 }
 
 /**
- * store the detectors to locally
+ * store the alarms to locally (also an empty list, when all the alarms have been deleted)
  */
-fun storeAlarmsToLocally(alarms: ArrayList<Alarm>, context: Context) {
+fun storeAlarmsToLocally(alarms: ArrayList<Alarm>, context: Context?) {
     // sort the list of events by date in descending
-    val alarms = ArrayList(alarms.sortedWith(compareByDescending { it.timeInMillis }))
-    if (alarms != null && alarms.size > 0) {
-        val alarmsJsonStr = convertToAlarmsGson(alarms)
-        setStringInPreference(context, ALARM_LIST_KEY_PREF, alarmsJsonStr)
-    }
+    val sortedAlarms = ArrayList(alarms.sortedWith(compareByDescending { it.timeInMillis }))
+    val alarmsJsonStr = convertToAlarmsGson(sortedAlarms)
+    setStringInPreference(context, ALARM_LIST_KEY_PREF, alarmsJsonStr)
 }
 
 /**
@@ -38,38 +34,24 @@ fun addAlarmToQueue(
     lat: Double,
     lon: Double,
     type: String,
-    isArmed: Boolean,
     typeIndex: Int,
     zone: String
-
 ) {
-    //////////////add alarm to queue
     //prevent duplicate alarm at the same sensor at the same time
     removeSensorAlarmById(alarmId)
-    if (type != null) {
-        val sensorAlarm = AlarmSensor(
-            alarmId,
-            Calendar.getInstance(),
-            type,
-            isArmed,
-            zone
-        )
-        sensorAlarm.typeIdx = typeIndex
-        sensorAlarm.latitude = lat
-        sensorAlarm.longitude = lon
-        UserSession.instance.alarmSensors?.add(sensorAlarm)
-    }
-    /// end add to queue
+    val sensorAlarm = AlarmSensor(
+        alarmId,
+        Calendar.getInstance(),
+        type,
+        zone
+    )
+    sensorAlarm.typeIdx = typeIndex
+    sensorAlarm.latitude = lat
+    sensorAlarm.longitude = lon
+    UserSession.instance.alarmSensors.add(sensorAlarm)
 }
 
 //remove alarm sensor if exist
 fun removeSensorAlarmById(alarmId: String) {
-
-    val iteratorList = UserSession.instance.alarmSensors?.listIterator()
-    while (iteratorList != null && iteratorList.hasNext()) {
-        val sensorItem = iteratorList.next()
-        if (sensorItem.alarmSensorId == alarmId) {
-            iteratorList.remove()
-        }
-    }
+    UserSession.instance.alarmSensors.removeIf { it.alarmSensorId == alarmId }
 }

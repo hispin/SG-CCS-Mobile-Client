@@ -1,31 +1,11 @@
 package com.sensoguard.ccsmobileclient.global
 
 import android.content.Context
+import android.content.SharedPreferences
+import androidx.core.content.edit
 
-//read Double share preference
-fun getDoubleInPreference(context: Context?, key: String, default: Double): Double? {
-    if (context == null) {
-        return null
-    }
-    val pref = context.getSharedPreferences(SHARED_PREF_FILE_NAME, Context.MODE_PRIVATE)
-    return java.lang.Double.longBitsToDouble(
-        pref.getLong(
-            key,
-            java.lang.Double.doubleToRawLongBits(default)
-        )
-    )
-}
-
-
-//write Long to share preference
-fun setDoubleInPreference(context: Context?, key: String, value: Double) {
-    if (context == null) {
-        return
-    }
-    val pref = context.getSharedPreferences(SHARED_PREF_FILE_NAME, Context.MODE_PRIVATE)
-    val edit = pref.edit()
-    edit.putLong(key, java.lang.Double.doubleToRawLongBits(value))
-    edit.apply()
+private fun getPreferences(context: Context): SharedPreferences {
+    return context.getSharedPreferences(SHARED_PREF_FILE_NAME, Context.MODE_PRIVATE)
 }
 
 //read Long share preference
@@ -33,8 +13,7 @@ fun getLongInPreference(context: Context?, key: String, default: Long): Long? {
     if (context == null) {
         return null
     }
-    val pref = context.getSharedPreferences(SHARED_PREF_FILE_NAME, Context.MODE_PRIVATE)
-    return pref.getLong(key, default)
+    return getPreferences(context).getLong(key, default)
 }
 
 
@@ -43,10 +22,7 @@ fun setLongInPreference(context: Context?, key: String, value: Long) {
     if (context == null) {
         return
     }
-    val pref=context.getSharedPreferences(SHARED_PREF_FILE_NAME, Context.MODE_PRIVATE)
-    val edit=pref.edit()
-    edit.putLong(key, value)
-    edit.apply()
+    getPreferences(context).edit { putLong(key, value) }
 }
 
 
@@ -55,21 +31,7 @@ fun setStringInPreference(context: Context?, key: String, value: String?) {
     if (context == null) {
         return
     }
-    val pref=context.getSharedPreferences(SHARED_PREF_FILE_NAME, Context.MODE_PRIVATE)
-    val edit=pref.edit()
-    edit.putString(key, value)
-    edit.apply()
-}
-
-//remove share preference
-fun removePreference(context: Context?, key: String) {
-    if (context == null) {
-        return
-    }
-    val pref=context.getSharedPreferences(SHARED_PREF_FILE_NAME, Context.MODE_PRIVATE)
-    val edit=pref.edit()
-    edit.remove(key)
-    edit.apply()
+    getPreferences(context).edit { putString(key, value) }
 }
 
 
@@ -78,19 +40,7 @@ fun getStringInPreference(context: Context?, key: String, default: String?): Str
     if (context == null) {
         return null
     }
-    val pref=context.getSharedPreferences(SHARED_PREF_FILE_NAME, Context.MODE_PRIVATE)
-    return pref.getString(key, default)
-}
-
-//read String share preference
-fun removeStringInPreference(context: Context?, key: String) {
-    if (context == null) {
-        return
-    }
-    val pref=context.getSharedPreferences(SHARED_PREF_FILE_NAME, Context.MODE_PRIVATE)
-    val edit=pref.edit()
-    edit.remove(key)
-    edit.apply()
+    return getPreferences(context).getString(key, default)
 }
 
 //read Boolean share preference
@@ -98,8 +48,7 @@ fun getBooleanInPreference(context: Context?, key: String, default: Boolean): Bo
     if (context == null) {
         return false
     }
-    val pref=context.getSharedPreferences(SHARED_PREF_FILE_NAME, Context.MODE_PRIVATE)
-    return pref.getBoolean(key, default)
+    return getPreferences(context).getBoolean(key, default)
 }
 
 
@@ -108,10 +57,7 @@ fun setBooleanInPreference(context: Context?, key: String, value: Boolean) {
     if (context == null) {
         return
     }
-    val pref=context.getSharedPreferences(SHARED_PREF_FILE_NAME, Context.MODE_PRIVATE)
-    val edit=pref.edit()
-    edit.putBoolean(key, value)
-    edit.apply()
+    getPreferences(context).edit { putBoolean(key, value) }
 }
 
 //read Int share preference
@@ -119,8 +65,7 @@ fun getIntInPreference(context: Context?, key: String, default: Int): Int? {
     if (context == null) {
         return null
     }
-    val pref=context.getSharedPreferences(SHARED_PREF_FILE_NAME, Context.MODE_PRIVATE)
-    return pref.getInt(key, default)
+    return getPreferences(context).getInt(key, default)
 }
 
 
@@ -129,11 +74,5 @@ fun setIntInPreference(context: Context?, key: String, value: Int) {
     if (context == null) {
         return
     }
-    val pref=context.getSharedPreferences(SHARED_PREF_FILE_NAME, Context.MODE_PRIVATE)
-    val edit=pref.edit()
-    edit.putInt(key, value)
-    edit.apply()
+    getPreferences(context).edit { putInt(key, value) }
 }
-
-
-

@@ -1,60 +1,32 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name" translatable="false">SG-CCS Mobile Client</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="empty_field_error">This field cannot be blank</string>
-    <string name="rename">rename</string>
     <string name="csv">csv</string>
-    <string name="dialog_new_sensor_title">Configure Sensors</string>
-    <string name="invalid_mum_sensors">invalid number of sensors</string>
     <string name="name_title">ZONE</string>
-    <string name="id_title">HUB</string>
-    <string name="map_location_title">PLACED</string>
-    <string name="status_title">ACTIVE</string>
-    <string name="type_title">TYPE</string>
-    <string name="time_title">TIME</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
-    <string name="content_delete_extra_sensor">The System has more sensors than configured, do you want to delete extra
-        sensors ?
-    </string>
-    <string name="remove_extra_sensors">Remove extra sensors</string>
     <string name="csv_date_title"><![CDATA[Date&Time]]></string>
     <string name="csv_name_title">Sensor Name</string>
     <string name="csv_id_title">ID</string>
     <string name="csv_alarm_type_title">Alarm Type</string>
     <string name="csv_latitude_title">latitude</string>
     <string name="csv_longitude_title">longitude</string>
-    <string name="sensor_table_title">Sensors Table</string>
     <string name="map_title">Map</string>
     <string name="config_title">Configuration</string>
     <string name="alarm_log_title">Alarm Log</string>
-    <string name="not_located">Not Located</string>
-    <string name="located">Located</string>
-    <string name="date_title">DATE</string>
     <string name="save">save</string>
-    <string name="define_sensor_amount">Number of sensors</string>
     <string name="choose_alarm_sound">Choose alarm sound</string>
     <string name="vibration_when_alarm">Vibration when alarm</string>
     <string name="alarm_flickering_time">Alarm flickering time</string>
     <string name="default_str">default</string>
 
 
-    <string-array name="state_types">
-        <item>Car</item>
-        <item>Intruder</item>
-        <item>Motion</item>
-        <item>Sensor disconnected</item>
-        <item>System ok</item>
-        <item>Low battery</item>
-        <item>Dual tech alarm</item>
-    </string-array>
-    <string name="load_settings_export_settings">Load settings / export settings</string>
     <string name="map_view">Map view</string>
     <string name="language">Language</string>
     <string name="satellite">satellite</string>
     <string name="map">map</string>
-    <string name="sensors_save_successfully">The sensors were successfully saved</string>
     <string name="time_flickering_save_successfully">Time flickering was successfully saved</string>
     <string name="english">English</string>
     <string name="no_selected_sound">no selected sound</string>
@@ -63,84 +35,23 @@
     <string name="share">share</string>
     <string name="enter_code">enter activation code</string>
     <string name="wrong_activate_code">wrong activate code</string>
-    <string name="sign_in">sign in</string>
     <string name="activate">Activate</string>
     <string name="error">Error</string>
     <string name="general_desc">description</string>
     <string name="email_subject">My Code for SG-CCS Mobile Client App</string>
-    <string name="delete_all">Delete all</string>
-    <string name="do_you_really_want_delete_all_alarm">Do you really want to delete all alarms</string>
     <string name="receiver_disconnected">Receiver Disconnected</string>
     <string name="OK">OK</string>
-    <!--  haggay account  <string name="mapbox_access_token" translatable="false">pk.eyJ1IjoiaGFnc3dlYWQiLCJhIjoiY2tob3JhdTllMDh4dDJ5bWp2cHA5cWJyeCJ9.T_XNJsVjZrcNE27n9Ieb8g</string>-->
-    <string name="mapbox_access_token" translatable="false">pk.eyJ1IjoidG9tZXJjaG9lbiIsImEiOiJja2psYWJ0M201N3ZuMnJucW4zNWZqYzNvIn0.fZ3nmtGLC2X-PKfuNY5wfQ</string>
+    <!-- read by name by the Mapbox SDK -->
+    <string name="mapbox_access_token" translatable="false" tools:ignore="UnusedResources">pk.eyJ1IjoidG9tZXJjaG9lbiIsImEiOiJja2psYWJ0M201N3ZuMnJucW4zNWZqYzNvIn0.fZ3nmtGLC2X-PKfuNY5wfQ</string>
 
-    <string name="simple_offline_end_progress_success">simple offline end progress success</string>
-    <string name="basic_offline_deleted_toast">basic offline deleted toast</string>
-    <string name="no_selected_location">No places selected</string>
     <string name="sensor_details">Sensor details</string>
-    <string name="save_offline_map">Save offline map</string>
-    <string name="results">Results</string>
-    <string name="save_map">Save map</string>
-    <string name="delete_last_map">Delete the last map</string>
-    <string name="disconnect_usb">Disconnect the usb</string>
-    <string name="this_will_disconnect_the_usb">This will disconnect the usb</string>
     <string name="always_show_sensor_name">Always show the sensor name</string>
-    <string name="title_activity_parent" translatable="false">ParentActivity</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label" translatable="false">First Fragment</string>
-    <string name="second_fragment_label" translatable="false">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
 
-    <string name="hello_first_fragment" translatable="false">Hello first fragment</string>
-    <string name="hello_second_fragment" translatable="false">Hello second fragment. Arg: %1$s</string>
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
-    <string name="forward_email">Forward email</string>
-    <string name="mail_address_title">Email Address:</string>
-    <string name="password_title">Password:</string>
-    <string name="incoming_email_server_title">Incoming Email server:</string>
-    <string name="incoming_email_server_port_title">Incoming Email Port:</string>
-    <string name="use_ssl_title">Using SSL:</string>
     <string name="cancel">Cancel</string>
-    <string name="email_setting">Email Settings</string>
     <string name="an_alert_was_received">An alert was received</string>
     <string name="email_content">%1$s alarm from %2$s in %3$s</string>
-    <string name="outgoing_mail_server_title">Outgoing  Server</string>
-    <string name="user_name">User name</string>
-    <string name="outgoing_mail_port_title">Outgoing  Port</string>
-    <string name="recipient">Recipient</string>
-    <string name="no_fill_account">You have not filled in email account information</string>
-    <string name="sender_email">Sender Email</string>
-    <string name="password_title1">Password</string>
-    <string name="use_ssl_title1">Using SSL</string>
-    <string name="des">description</string>
-    <string name="usb_is_disconnect">The usb is disconnected</string>
-    <string name="commands_title">Commands</string>
-    <string name="select_sensor">Select a sensor</string>
-    <string name="get_sens_level">"Get Sens Level"</string>
-    <string name="no_selected_sensor">"You did not select a sensor"</string>
-    <string name="get_sens_level_rsp">Get Sens Level Response</string>
-    <string name="close">Close</string>
-    <string name="set_sens_level">Set Sens Level</string>
-    <string name="select_car_sens">Select sens for alarm car</string>
-    <string name="select_intruder_sens">Select sens for intruder</string>
-    <string name="error_zero_sens">Zero can not be sent both for alert and for car and intruder</string>
-    <string name="connect">Connect</string>
-    <string name="disconnect">disconnect</string>
-    <string name="timer_off">timer off</string>
-    <string name="timer_on">timer on</string>
-    <string name="set_ref_timer">"Set RF On Timer"</string>
-    <string name="try_connect">try to connect</string>
-    <string name="no_response_sensor">"No response from the sensor"</string>
-    <string name="another_process">There is another process</string>
-    <string name="seismic">Seismic</string>
-    <string name="edit_sensor">Edit Sensor</string>
-    <string name="pir">PIR</string>
-    <string name="radar">Radar</string>
-    <string name="vibration">Vibration</string>
-    <string name="connected">connected</string>
     <string name="share_token">share token</string>
     <string name="date_time" translatable="false">Date and time</string>
     <string name="systems_filter" translatable="false">System</string>
@@ -151,28 +62,21 @@
     <string name="date_older" translatable="false">End date may not be earlier than start date</string>
     <string name="no_selected_alarms" translatable="false">No selected alarm</string>
     <string name="selected_alarms" translatable="false">selected alarm</string>
-    <string name="do_you_realy_want_delete_selected_alarm" translatable="false">Do you realy want to delete selected alarms?</string>
     <string name="from" translatable="false">from</string>
     <string name="to" translatable="false">to</string>
     <string name="ok" translatable="false">OK</string>
 
 
-    <string-array name="car_ids">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-        <item>5</item>
-        <item>6</item>
-        <item>7</item>
-    </string-array>
 
-    <string-array name="sensor_type">
-        <item>Seismic</item>
-        <item>PIR</item>
-        <item>Radar</item>
-        <item>Vibration</item>
-    </string-array>
-
+    <string name="error_in_location">Error getting the current location</string>
+    <string name="enter_number">Enter a number</string>
+    <string name="no_token">No token</string>
+    <string name="select_alarm">Select Alarm</string>
+    <string name="alarm_from_unit">%1$s alarm from unit %2$s</string>
+    <string name="play_services_not_supported">This device is not supported by Google Play Services.</string>
+    <string name="failed_registration">Failed to complete registration</string>
+    <string name="my_location">My location</string>
+    <string name="clear_alarms">Clear the alarms</string>
+    <string name="zero_seconds_hint" translatable="false">0</string>
+    <string name="do_you_really_want_delete_selected_alarm">Do you really want to delete the selected alarms?</string>
 </resources>
